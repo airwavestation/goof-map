@@ -2,9 +2,11 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
+import { OrbitControls, Line } from '@react-three/drei';
 import { Vector3 } from 'three';
 import goofsRaw from '../data/goofs.json';
+
+// ---------- GOOF NODE TYPES ----------
 
 type GoofValues = {
   tempoSpeed: number;
@@ -56,7 +58,7 @@ function getNodeFamily(node: GoofNode): GoofFamily {
 function getFamilyColor(family: GoofFamily): string {
   switch (family) {
     case 'high-energy':
-      return '#00FF00'; // main neon
+      return '#00FF00'; // main neon green
     case 'groove':
       return '#66FF66'; // softer green
     case 'dreamy':
@@ -67,7 +69,6 @@ function getFamilyColor(family: GoofFamily): string {
   }
 }
 
-/** Color mapping using station palette & family */
 function getNodeBaseColor(node: GoofNode): string {
   return getFamilyColor(getNodeFamily(node));
 }
@@ -95,11 +96,89 @@ function getNodeRadius(
   return base;
 }
 
-/** Camera rig that zooms to the selected node once, then lets the user drive */
+// ---------- BOUNDARY / CUBOCTAHEDRON DATA ----------
+
+type BoundaryVertex = {
+  id: string;
+  label: string;
+  position: [number, number, number];
+};
+
+// Your 12 extreme vertices
+const BOUNDARY_VERTICES: BoundaryVertex[] = [
+  { id: 'v1', label: 'V1', position: [2, 2, 0] },
+  { id: 'v2', label: 'V2', position: [-2, -2, 0] },
+  { id: 'v3', label: 'V3', position: [2, -2, 0] },
+  { id: 'v4', label: 'V4', position: [-2, 2, 0] },
+  { id: 'v5', label: 'V5', position: [2, 0, 2] },
+  { id: 'v6', label: 'V6', position: [-2, 0, -2] },
+  { id: 'v7', label: 'V7', position: [-2, 0, 2] },
+  { id: 'v8', label: 'V8', position: [2, 0, -2] },
+  { id: 'v9', label: 'V9', position: [0, 2, 2] },
+  { id: 'v10', label: 'V10', position: [0, -2, -2] },
+  { id: 'v11', label: 'V11', position: [0, 2, -2] },
+  { id: 'v12', label: 'V12', position: [0, -2, 2] }
+];
+
+// Map for quick lookup by id
+const BOUNDARY_VERTEX_MAP: Record<string, BoundaryVertex> =
+  BOUNDARY_VERTICES.reduce(
+    (acc, v) => {
+      acc[v.id] = v;
+      return acc;
+    },
+    {} as Record<string, BoundaryVertex>
+  );
+
+function getBoundaryPosition(id: string): [number, number, number] {
+  return BOUNDARY_VERTEX_MAP[id].position;
+}
+
+// Six axis lines as given
+const AXIS_LINES: [string, string][] = [
+  ['v1', 'v2'],
+  ['v3', 'v4'],
+  ['v5', 'v6'],
+  ['v7', 'v8'],
+  ['v9', 'v10'],
+  ['v11', 'v12']
+];
+
+// Cuboctahedron edges (pairs of vertices at edge distance)
+const HULL_EDGES: [string, string][] = [
+  ['v1', 'v5'],
+  ['v1', 'v8'],
+  ['v1', 'v9'],
+  ['v1', 'v11'],
+  ['v2', 'v6'],
+  ['v2', 'v7'],
+  ['v2', 'v10'],
+  ['v2', 'v12'],
+  ['v3', 'v5'],
+  ['v3', 'v8'],
+  ['v3', 'v10'],
+  ['v3', 'v12'],
+  ['v4', 'v6'],
+  ['v4', 'v7'],
+  ['v4', 'v9'],
+  ['v4', 'v11'],
+  ['v5', 'v9'],
+  ['v5', 'v12'],
+  ['v6', 'v10'],
+  ['v6', 'v11'],
+  ['v7', 'v9'],
+  ['v7', 'v12'],
+  ['v8', 'v10'],
+  ['v8', 'v11']
+];
+
+// ---------- CAMERA RIG ----------
+
 type CameraRigProps = {
   focusPosition: [number, number, number] | null;
 };
 
+/** Camera rig that zooms to the selected node once, then lets the user drive */
 function CameraRig({ focusPosition }: CameraRigProps) {
   const controlsRef = useRef<any>(null);
   const { camera } = useThree();
@@ -162,13 +241,14 @@ function CameraRig({ focusPosition }: CameraRigProps) {
   );
 }
 
+// ---------- MAIN SCENE COMPONENT ----------
+
 export function GoofScene() {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [familyFilter, setFamilyFilter] = useState<
-    'all' | GoofFamily
-  >('all');
+  const [familyFilter, setFamilyFilter] = useState<'all' | GoofFamily>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [showBoundaries, setShowBoundaries] = useState<boolean>(true);
 
   const normalizedQuery = searchQuery.trim().toLowerCase();
 
@@ -180,8 +260,7 @@ export function GoofScene() {
     }
 
     if (normalizedQuery) {
-      const text =
-        `${node.name} ${node.genre}`.toLowerCase();
+      const text = `${node.name} ${node.genre}`.toLowerCase();
       if (!text.includes(normalizedQuery)) {
         return false;
       }
@@ -190,12 +269,10 @@ export function GoofScene() {
     return true;
   });
 
-  const selectedNode =
-    GOOF_NODES.find((n) => n.id === selectedId) || null;
+  const selectedNode = GOOF_NODES.find((n) => n.id === selectedId) || null;
 
   const selectedVisible =
-    !!selectedNode &&
-    filteredNodes.some((n) => n.id === selectedNode.id);
+    !!selectedNode && filteredNodes.some((n) => n.id === selectedNode.id);
 
   return (
     <div
@@ -222,6 +299,58 @@ export function GoofScene() {
 
           {/* grid with neon center line */}
           <gridHelper args={[10, 20, '#00FF00', '#2A2A2A']} />
+
+          {/* ---- BOUNDARY VERTICES + AXES + HULL (toggleable) ---- */}
+          {showBoundaries && (
+            <>
+              {/* axes (dashed) */}
+              {AXIS_LINES.map(([a, b]) => {
+                const pa = getBoundaryPosition(a);
+                const pb = getBoundaryPosition(b);
+                return (
+                  <Line
+                    key={`axis-${a}-${b}`}
+                    points={[pa, pb]}
+                    color="#777777"
+                    lineWidth={1}
+                    dashed
+                    dashSize={0.25}
+                    gapSize={0.2}
+                  />
+                );
+              })}
+
+              {/* cuboctahedron hull edges */}
+              {HULL_EDGES.map(([a, b]) => {
+                const pa = getBoundaryPosition(a);
+                const pb = getBoundaryPosition(b);
+                return (
+                  <Line
+                    key={`edge-${a}-${b}`}
+                    points={[pa, pb]}
+                    color="#334444"
+                    lineWidth={1}
+                    transparent
+                    opacity={0.8}
+                  />
+                );
+              })}
+
+              {/* vertex markers */}
+              {BOUNDARY_VERTICES.map((v) => (
+                <mesh key={v.id} position={v.position}>
+                  <sphereGeometry args={[0.06, 16, 16]} />
+                  <meshStandardMaterial
+                    color="#009DFF"
+                    emissive="#009DFF"
+                    emissiveIntensity={0.5}
+                    metalness={0.2}
+                    roughness={0.3}
+                  />
+                </mesh>
+              ))}
+            </>
+          )}
 
           {/* GOOF centroids */}
           {filteredNodes.map((node) => {
@@ -380,6 +509,43 @@ export function GoofScene() {
           >
             Showing {filteredNodes.length} / {GOOF_NODES.length} nodes.
           </div>
+
+          {/* Boundary toggle */}
+          <div
+            style={{
+              marginTop: '0.25rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '0.5rem'
+            }}
+          >
+            <span
+              style={{
+                fontSize: '0.7rem',
+                opacity: 0.75
+              }}
+            >
+              Show boundary hull
+            </span>
+            <label
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                cursor: 'pointer',
+                fontSize: '0.7rem'
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={showBoundaries}
+                onChange={(e) => setShowBoundaries(e.target.checked)}
+                style={{ accentColor: '#00FF00' }}
+              />
+              <span>{showBoundaries ? 'On' : 'Off'}</span>
+            </label>
+          </div>
         </div>
 
         {/* Node details */}
@@ -427,9 +593,7 @@ export function GoofScene() {
                       height: '8px',
                       borderRadius: '999px',
                       backgroundColor: getNodeBaseColor(selectedNode),
-                      boxShadow: `0 0 12px ${getNodeBaseColor(
-                        selectedNode
-                      )}`
+                      boxShadow: `0 0 12px ${getNodeBaseColor(selectedNode)}`
                     }}
                   />
                 </div>
@@ -603,7 +767,7 @@ export function GoofScene() {
   );
 }
 
-/** Tiny helper component for legend color dots */
+// Tiny helper component for legend color dots
 function LegendSwatch({ color, label }: { color: string; label: string }) {
   return (
     <div
