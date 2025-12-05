@@ -1,0 +1,201 @@
+[
+    {
+      "id": "liquid-dnb",
+      "name": "Liquid Drum & Bass",
+      "genre": "Liquid DnB",
+      "position": [0.9, 0.7, 0.2],
+      "values": {
+        "tempoSpeed": 1.4,
+        "tempoComplexity": 1.2,
+        "harmonicQuality": 0.8,
+        "harmonicDensity": 0.9,
+        "sonicTemperature": 0.3,
+        "sonicSynthetic": 1.3
+      },
+      "links": {
+        "spotify": "",
+        "youtube": ""
+      }
+    },
+    {
+      "id": "neurofunk",
+      "name": "Neurofunk",
+      "genre": "Drum & Bass",
+      "position": [1.4, 0.3, -0.6],
+      "values": {
+        "tempoSpeed": 1.6,
+        "tempoComplexity": 1.4,
+        "harmonicQuality": -0.4,
+        "harmonicDensity": 1.1,
+        "sonicTemperature": -0.2,
+        "sonicSynthetic": 1.7
+      },
+      "links": {
+        "spotify": "",
+        "youtube": ""
+      }
+    },
+    {
+      "id": "uplifting-trance",
+      "name": "Uplifting Trance",
+      "genre": "Trance",
+      "position": [1.2, 0.9, 0.9],
+      "values": {
+        "tempoSpeed": 1.2,
+        "tempoComplexity": 0.6,
+        "harmonicQuality": 1.7,
+        "harmonicDensity": 1.3,
+        "sonicTemperature": 1.2,
+        "sonicSynthetic": 1.1
+      },
+      "links": {
+        "spotify": "",
+        "youtube": ""
+      }
+    },
+    {
+      "id": "techno",
+      "name": "Driving Techno",
+      "genre": "Techno",
+      "position": [0.8, -0.4, 0.1],
+      "values": {
+        "tempoSpeed": 1.3,
+        "tempoComplexity": 0.4,
+        "harmonicQuality": -0.6,
+        "harmonicDensity": 0.2,
+        "sonicTemperature": 0.1,
+        "sonicSynthetic": 1.5
+      },
+      "links": {
+        "spotify": "",
+        "youtube": ""
+      }
+    },
+    {
+      "id": "deep-house",
+      "name": "Deep House",
+      "genre": "House",
+      "position": [0.3, 0.3, 0.8],
+      "values": {
+        "tempoSpeed": 0.4,
+        "tempoComplexity": 0.1,
+        "harmonicQuality": 1.1,
+        "harmonicDensity": 0.8,
+        "sonicTemperature": 1.0,
+        "sonicSynthetic": 0.3
+      },
+      "links": {
+        "spotify": "",
+        "youtube": ""
+      }
+    },
+    {
+      "id": "lofi",
+      "name": "Lo-Fi Beats",
+      "genre": "Lo-Fi Hip Hop",
+      "position": [-0.3, -0.8, 0.6],
+      "values": {
+        "tempoSpeed": -0.6,
+        "tempoComplexity": -0.8,
+        "harmonicQuality": 0.7,
+        "harmonicDensity": -0.2,
+        "sonicTemperature": 1.4,
+        "sonicSynthetic": -0.6
+      },
+      "links": {
+        "spotify": "",
+        "youtube": ""
+      }
+    },
+    {
+      "id": "ambient-drone",
+      "name": "Ambient Drone",
+      "genre": "Ambient",
+      "position": [-0.9, -1.2, 0.1],
+      "values": {
+        "tempoSpeed": -1.8,
+        "tempoComplexity": -1.6,
+        "harmonicQuality": -0.3,
+        "harmonicDensity": 1.0,
+        "sonicTemperature": -0.5,
+        "sonicSynthetic": -1.4
+      },
+      "links": {
+        "spotify": "",
+        "youtube": ""
+      }
+    },
+    {
+      "id": "future-garage",
+      "name": "Future Garage",
+      "genre": "Garage",
+      "position": [-0.2, 0.6, 0.4],
+      "values": {
+        "tempoSpeed": 0.3,
+        "tempoComplexity": 0.8,
+        "harmonicQuality": 0.4,
+        "harmonicDensity": 0.6,
+        "sonicTemperature": 0.2,
+        "sonicSynthetic": 0.4
+      },
+      "links": {
+        "spotify": "",
+        "youtube": ""
+      }
+    },
+    {
+      "id": "riddim",
+      "name": "Riddim Dubstep",
+      "genre": "Dubstep",
+      "position": [0.5, -0.1, -0.9],
+      "values": {
+        "tempoSpeed": 0.9,
+        "tempoComplexity": 0.2,
+        "harmonicQuality": -0.8,
+        "harmonicDensity": 0.3,
+        "sonicTemperature": -0.4,
+        "sonicSynthetic": 1.6
+      },
+      "links": {
+        "spotify": "",
+        "youtube": ""
+      }
+    },
+    {
+      "id": "hardstyle",
+      "name": "Hardstyle",
+      "genre": "Hard Dance",
+      "position": [1.6, -0.7, -0.3],
+      "values": {
+        "tempoSpeed": 1.9,
+        "tempoComplexity": 0.9,
+        "harmonicQuality": 0.5,
+        "harmonicDensity": 0.7,
+        "sonicTemperature": 1.5,
+        "sonicSynthetic": 1.4
+      },
+      "links": {
+        "spotify": "",
+        "youtube": ""
+      }
+    },
+    {
+      "id": "chillwave",
+      "name": "Chillwave",
+      "genre": "Indie Electronic",
+      "position": [-0.4, 0.2, 0.9],
+      "values": {
+        "tempoSpeed": -0.2,
+        "tempoComplexity": -0.1,
+        "harmonicQuality": 0.9,
+        "harmonicDensity": 0.5,
+        "sonicTemperature": 1.3,
+        "sonicSynthetic": 0.2
+      },
+      "links": {
+        "spotify": "",
+        "youtube": ""
+      }
+    }
+  ]
+  
