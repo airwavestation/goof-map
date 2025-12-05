@@ -32,7 +32,7 @@ export default function HomePage() {
             opacity: 0.7,
           }}
         >
-          3D skeleton – just a lonely test planet for now.
+          3D skeleton – generic centroid positions.
         </p>
       </header>
 

@@ -3,6 +3,7 @@
       "id": "liquid-dnb",
       "name": "Liquid Drum & Bass",
       "genre": "Liquid DnB",
+      "description": "Rolling breaks, warm bass, and euphoric pads for late-night train rides.",
       "position": [0.9, 0.7, 0.2],
       "values": {
         "tempoSpeed": 1.4,
@@ -13,14 +14,15 @@
         "sonicSynthetic": 1.3
       },
       "links": {
-        "spotify": "",
-        "youtube": ""
+        "spotify": "https://open.spotify.com/",
+        "youtube": "https://www.youtube.com/"
       }
     },
     {
       "id": "neurofunk",
       "name": "Neurofunk",
       "genre": "Drum & Bass",
+      "description": "Tightly wound bass design, surgical drums, and dark futurist tension.",
       "position": [1.4, 0.3, -0.6],
       "values": {
         "tempoSpeed": 1.6,
@@ -31,14 +33,15 @@
         "sonicSynthetic": 1.7
       },
       "links": {
-        "spotify": "",
-        "youtube": ""
+        "spotify": "https://open.spotify.com/",
+        "youtube": "https://www.youtube.com/"
       }
     },
     {
       "id": "uplifting-trance",
       "name": "Uplifting Trance",
       "genre": "Trance",
+      "description": "Big supersaws, long builds, and emotional payoff on the drop.",
       "position": [1.2, 0.9, 0.9],
       "values": {
         "tempoSpeed": 1.2,
@@ -49,14 +52,15 @@
         "sonicSynthetic": 1.1
       },
       "links": {
-        "spotify": "",
-        "youtube": ""
+        "spotify": "https://open.spotify.com/",
+        "youtube": "https://www.youtube.com/"
       }
     },
     {
       "id": "techno",
       "name": "Driving Techno",
       "genre": "Techno",
+      "description": "Relentless four-on-the-floor with hypnotic repetition and subtle shifts.",
       "position": [0.8, -0.4, 0.1],
       "values": {
         "tempoSpeed": 1.3,
@@ -67,14 +71,15 @@
         "sonicSynthetic": 1.5
       },
       "links": {
-        "spotify": "",
-        "youtube": ""
+        "spotify": "https://open.spotify.com/",
+        "youtube": "https://www.youtube.com/"
       }
     },
     {
       "id": "deep-house",
       "name": "Deep House",
       "genre": "House",
+      "description": "Smooth grooves, soulful chords, and late-night lounge energy.",
       "position": [0.3, 0.3, 0.8],
       "values": {
         "tempoSpeed": 0.4,
@@ -85,14 +90,15 @@
         "sonicSynthetic": 0.3
       },
       "links": {
-        "spotify": "",
-        "youtube": ""
+        "spotify": "https://open.spotify.com/",
+        "youtube": "https://www.youtube.com/"
       }
     },
     {
       "id": "lofi",
       "name": "Lo-Fi Beats",
       "genre": "Lo-Fi Hip Hop",
+      "description": "Dusty drums, soft keys, and tape-warped comfort for background focus.",
       "position": [-0.3, -0.8, 0.6],
       "values": {
         "tempoSpeed": -0.6,
@@ -103,14 +109,15 @@
         "sonicSynthetic": -0.6
       },
       "links": {
-        "spotify": "",
-        "youtube": ""
+        "spotify": "https://open.spotify.com/",
+        "youtube": "https://www.youtube.com/"
       }
     },
     {
       "id": "ambient-drone",
       "name": "Ambient Drone",
       "genre": "Ambient",
+      "description": "Slowly evolving textures that feel more like weather than songs.",
       "position": [-0.9, -1.2, 0.1],
       "values": {
         "tempoSpeed": -1.8,
@@ -121,14 +128,15 @@
         "sonicSynthetic": -1.4
       },
       "links": {
-        "spotify": "",
-        "youtube": ""
+        "spotify": "https://open.spotify.com/",
+        "youtube": "https://www.youtube.com/"
       }
     },
     {
       "id": "future-garage",
       "name": "Future Garage",
       "genre": "Garage",
+      "description": "Shuffling drums, atmospheric pads, and emotional vocal chops.",
       "position": [-0.2, 0.6, 0.4],
       "values": {
         "tempoSpeed": 0.3,
@@ -139,14 +147,15 @@
         "sonicSynthetic": 0.4
       },
       "links": {
-        "spotify": "",
-        "youtube": ""
+        "spotify": "https://open.spotify.com/",
+        "youtube": "https://www.youtube.com/"
       }
     },
     {
       "id": "riddim",
       "name": "Riddim Dubstep",
       "genre": "Dubstep",
+      "description": "Minimalist, lurching grooves built around one huge, obnoxious idea.",
       "position": [0.5, -0.1, -0.9],
       "values": {
         "tempoSpeed": 0.9,
@@ -157,14 +166,15 @@
         "sonicSynthetic": 1.6
       },
       "links": {
-        "spotify": "",
-        "youtube": ""
+        "spotify": "https://open.spotify.com/",
+        "youtube": "https://www.youtube.com/"
       }
     },
     {
       "id": "hardstyle",
       "name": "Hardstyle",
       "genre": "Hard Dance",
+      "description": "Pounding kicks, festival supersaw hooks, and high-energy catharsis.",
       "position": [1.6, -0.7, -0.3],
       "values": {
         "tempoSpeed": 1.9,
@@ -175,14 +185,15 @@
         "sonicSynthetic": 1.4
       },
       "links": {
-        "spotify": "",
-        "youtube": ""
+        "spotify": "https://open.spotify.com/",
+        "youtube": "https://www.youtube.com/"
       }
     },
     {
       "id": "chillwave",
       "name": "Chillwave",
       "genre": "Indie Electronic",
+      "description": "Hazy nostalgia, sidechained synths, and VHS-sunset memory fog.",
       "position": [-0.4, 0.2, 0.9],
       "values": {
         "tempoSpeed": -0.2,
@@ -193,8 +204,8 @@
         "sonicSynthetic": 0.2
       },
       "links": {
-        "spotify": "",
-        "youtube": ""
+        "spotify": "https://open.spotify.com/",
+        "youtube": "https://www.youtube.com/"
       }
     }
   ]
