@@ -8,37 +8,62 @@ export default function HomePage() {
         minHeight: '100vh',
         display: 'flex',
         flexDirection: 'column',
-        backgroundColor: '#020308',
+        backgroundColor: '#1E1E1E',
         color: '#f5f5f5',
+        fontFamily:
+          '-apple-system, BlinkMacSystemFont, system-ui, -system-ui, sans-serif'
       }}
     >
       <header
         style={{
-          padding: '1rem',
-          textAlign: 'center',
+          padding: '0.9rem 1.25rem',
+          borderBottom: '1px solid rgba(0,255,0,0.18)',
+          display: 'flex',
+          alignItems: 'baseline',
+          justifyContent: 'space-between',
+          gap: '0.75rem'
         }}
       >
-        <h1
+        <div>
+          <h1
+            style={{
+              fontSize: '1.4rem',
+              letterSpacing: '0.16em',
+              textTransform: 'uppercase'
+            }}
+          >
+            <span style={{ color: '#00FF00' }}>G.O.O.F.</span>{' '}
+            <span style={{ opacity: 0.85 }}>Genre Map v1</span>
+          </h1>
+          <p
+            style={{
+              fontSize: '0.78rem',
+              opacity: 0.7,
+              marginTop: '0.25rem'
+            }}
+          >
+            Generic Oscillation Organization Framework &mdash; station viewport
+            prototype.
+          </p>
+        </div>
+
+        <div
           style={{
-            fontSize: '1.75rem',
-            letterSpacing: '0.08em',
-          }}
-        >
-          G.O.O.F. – Genre Map v1
-        </h1>
-        <p
-          style={{
-            fontSize: '0.85rem',
+            fontSize: '0.7rem',
             opacity: 0.7,
+            letterSpacing: '0.18em',
+            textTransform: 'uppercase'
           }}
         >
-          3D skeleton – generic centroid positions.
-        </p>
+          <span style={{ color: '#00FF00' }}>Status:&nbsp;</span>
+          Online
+        </div>
       </header>
 
       <section
         style={{
           flex: 1,
+          minHeight: 0
         }}
       >
         <GoofScene />
