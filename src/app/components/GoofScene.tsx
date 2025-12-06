@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Line } from '@react-three/drei';
-import { Vector3 } from 'three';
+import { Vector3, Quaternion } from 'three';
 import goofsRaw from '../data/goofs.json';
 
 // ---------- GOOF NODE TYPES ----------
@@ -42,17 +42,17 @@ function computeSongPosition(values: GoofValues): Vec3 {
   // v1 = positive end, v2 = negative end for each axis
   const vertices: [Vec3, Vec3][] = [
     // tempo_speed:      (-2 slow … +2 fast)
-    [[ 2,  2,  0], [-2, -2,  0]],
+    [[2, 2, 0], [-2, -2, 0]],
     // tempo_complexity: (-2 simple … +2 complex)
-    [[ 2, -2,  0], [-2,  2,  0]],
+    [[2, -2, 0], [-2, 2, 0]],
     // tonality_harmonic: (-2 dissonant … +2 consonant)
-    [[ 2,  0,  2], [-2,  0, -2]],
+    [[2, 0, 2], [-2, 0, -2]],
     // tonality_density: (-2 simple … +2 dense)
-    [[-2,  0,  2], [ 2,  0, -2]],
+    [[-2, 0, 2], [2, 0, -2]],
     // timbre_warmth:    (-2 cold … +2 warm)
-    [[ 0,  2,  2], [ 0, -2, -2]],
+    [[0, 2, 2], [0, -2, -2]],
     // timbre_synthetic: (-2 organic … +2 synthetic)  (+ side → Vertex12)
-    [[ 0, -2,  2], [ 0,  2, -2]],
+    [[0, -2, 2], [0, 2, -2]],
   ];
 
   const valueList = [
@@ -182,7 +182,7 @@ type BoundaryVertex = {
   position: [number, number, number];
 };
 
-// Your 12 extreme vertices
+// Your 12 extreme vertices (geometry positions)
 const BOUNDARY_VERTICES: BoundaryVertex[] = [
   { id: 'v1', label: 'V1', position: [2, 2, 0] },
   { id: 'v2', label: 'V2', position: [-2, -2, 0] },
@@ -195,7 +195,7 @@ const BOUNDARY_VERTICES: BoundaryVertex[] = [
   { id: 'v9', label: 'V9', position: [0, 2, 2] },
   { id: 'v10', label: 'V10', position: [0, -2, -2] },
   { id: 'v11', label: 'V11', position: [0, 2, -2] },
-  { id: 'v12', label: 'V12', position: [0, -2, 2] }
+  { id: 'v12', label: 'V12', position: [0, -2, 2] },
 ];
 
 // Map for quick lookup by id
@@ -219,7 +219,7 @@ const AXIS_LINES: [string, string][] = [
   ['v5', 'v6'],
   ['v7', 'v8'],
   ['v9', 'v10'],
-  ['v11', 'v12']
+  ['v11', 'v12'],
 ];
 
 // Cuboctahedron edges (pairs of vertices at edge distance)
@@ -247,8 +247,206 @@ const HULL_EDGES: [string, string][] = [
   ['v7', 'v9'],
   ['v7', 'v12'],
   ['v8', 'v10'],
-  ['v8', 'v11']
+  ['v8', 'v11'],
 ];
+
+// ---------- VERTEX META: AXIS / PARAM INFO ----------
+
+type AxisGroup = 'TEMPO' | 'TONALITY' | 'TIMBRE';
+
+type VertexInfo = {
+  id: string;
+  title: string; // e.g. "Fast Tempo"
+  group: AxisGroup;
+  dimension: string; // e.g. "Rhythm Speed"
+  role: 'positive' | 'negative';
+  axisLabel: string; // e.g. "+2 FAST"
+  rangeHint: string; // e.g. "-2 SLOW … +2 FAST"
+  oppositeId: string;
+  description: string;
+  exampleGenres: string;
+};
+
+const VERTEX_INFO: Record<string, VertexInfo> = {
+  // TEMPO — Rhythm Speed
+  v1: {
+    id: 'v1',
+    title: 'Fast Tempo',
+    group: 'TEMPO',
+    dimension: 'Rhythm Speed',
+    role: 'positive',
+    axisLabel: '+2 FAST',
+    rangeHint: '-2 SLOW … +2 FAST',
+    oppositeId: 'v2',
+    description: 'Represents the fastest music in the database.',
+    exampleGenres: 'Drum & Bass, Hardcore, Speedcore, Gabber',
+  },
+  v2: {
+    id: 'v2',
+    title: 'Slow Tempo',
+    group: 'TEMPO',
+    dimension: 'Rhythm Speed',
+    role: 'negative',
+    axisLabel: '-2 SLOW',
+    rangeHint: '-2 SLOW … +2 FAST',
+    oppositeId: 'v1',
+    description: 'Represents the slowest music in the database.',
+    exampleGenres: 'Chill, Downtempo, Ambient, Doom Jazz',
+  },
+
+  // TEMPO — Rhythm Complexity
+  v3: {
+    id: 'v3',
+    title: 'Complex Rhythm',
+    group: 'TEMPO',
+    dimension: 'Rhythm Complexity',
+    role: 'positive',
+    axisLabel: '+2 COMPLEX',
+    rangeHint: '-2 SIMPLE … +2 COMPLEX',
+    oppositeId: 'v4',
+    description:
+      'Represents the most rhythmically complex music in the database.',
+    exampleGenres: 'Breakcore, Jazz Fusion, IDM',
+  },
+  v4: {
+    id: 'v4',
+    title: 'Simple Rhythm',
+    group: 'TEMPO',
+    dimension: 'Rhythm Complexity',
+    role: 'negative',
+    axisLabel: '-2 SIMPLE',
+    rangeHint: '-2 SIMPLE … +2 COMPLEX',
+    oppositeId: 'v3',
+    description:
+      'Represents the most rhythmically simple music in the database.',
+    exampleGenres: 'House, Techno, Trap',
+  },
+
+  // TONALITY — Harmonic Quality
+  v5: {
+    id: 'v5',
+    title: 'Consonant Harmony',
+    group: 'TONALITY',
+    dimension: 'Harmonic Quality',
+    role: 'positive',
+    axisLabel: '+2 CONSONANT',
+    rangeHint: '-2 DISSONANT … +2 CONSONANT',
+    oppositeId: 'v6',
+    description:
+      'Represents the most harmonic, consonant, melodic music in the database.',
+    exampleGenres: 'Synthwave, Trance, Deep House, Future Bass',
+  },
+  v6: {
+    id: 'v6',
+    title: 'Dissonant Harmony',
+    group: 'TONALITY',
+    dimension: 'Harmonic Quality',
+    role: 'negative',
+    axisLabel: '-2 DISSONANT',
+    rangeHint: '-2 DISSONANT … +2 CONSONANT',
+    oppositeId: 'v5',
+    description:
+      'Represents the most dissonant, atonal music in the database.',
+    exampleGenres: 'Noise, Industrial, Dark Ambient',
+  },
+
+  // TONALITY — Harmonic Density
+  v7: {
+    id: 'v7',
+    title: 'Dense Harmony',
+    group: 'TONALITY',
+    dimension: 'Harmonic Density',
+    role: 'positive',
+    axisLabel: '+2 DENSE',
+    rangeHint: '-2 SIMPLE … +2 DENSE',
+    oppositeId: 'v8',
+    description:
+      'Represents the most harmonically dense music in the database.',
+    exampleGenres: 'Jazz Fusion, Progressive House, Orchestral Breakcore',
+  },
+  v8: {
+    id: 'v8',
+    title: 'Simple Harmony',
+    group: 'TONALITY',
+    dimension: 'Harmonic Density',
+    role: 'negative',
+    axisLabel: '-2 SIMPLE',
+    rangeHint: '-2 SIMPLE … +2 DENSE',
+    oppositeId: 'v7',
+    description:
+      'Represents the most harmonically simple, minimal music in the database.',
+    exampleGenres: 'Minimal Techno, Drone, Dub Techno',
+  },
+
+  // TIMBRE — Sonic Temperature
+  v9: {
+    id: 'v9',
+    title: 'Warm Timbre',
+    group: 'TIMBRE',
+    dimension: 'Sonic Temperature',
+    role: 'positive',
+    axisLabel: '+2 WARM',
+    rangeHint: '-2 COLD … +2 WARM',
+    oppositeId: 'v10',
+    description:
+      'Represents the warmest, lo-fi-leaning music in the database.',
+    exampleGenres: 'Lo-Fi Hip-Hop, Vaporwave, Dream Pop',
+  },
+  v10: {
+    id: 'v10',
+    title: 'Cold Timbre',
+    group: 'TIMBRE',
+    dimension: 'Sonic Temperature',
+    role: 'negative',
+    axisLabel: '-2 COLD',
+    rangeHint: '-2 COLD … +2 WARM',
+    oppositeId: 'v9',
+    description:
+      'Represents the coldest, crispest production in the database.',
+    exampleGenres: 'Techno, Glitch, Neurofunk, Industrial',
+  },
+
+  // TIMBRE — Synthetic vs Organic
+  v11: {
+    id: 'v11',
+    title: 'Organic Timbre',
+    group: 'TIMBRE',
+    dimension: 'Sonic Synthetic Value',
+    role: 'negative',
+    axisLabel: '-2 ORGANIC',
+    rangeHint: '-2 ORGANIC … +2 SYNTHETIC',
+    oppositeId: 'v12',
+    description:
+      'Represents the most organic / acoustic-leaning music in the database.',
+    exampleGenres: 'Folk, Jazz, Lo-Fi, Deep House',
+  },
+  v12: {
+    id: 'v12',
+    title: 'Synthetic Timbre',
+    group: 'TIMBRE',
+    dimension: 'Sonic Synthetic Value',
+    role: 'positive',
+    axisLabel: '+2 SYNTHETIC',
+    rangeHint: '-2 ORGANIC … +2 SYNTHETIC',
+    oppositeId: 'v11',
+    description:
+      'Represents the most synthetic / digital music in the database.',
+    exampleGenres: 'Trance, Techno, Industrial, Hyperpop',
+  },
+};
+
+// Axis-group colors for vertices
+const AXIS_GROUP_COLORS: Record<AxisGroup, string> = {
+  TEMPO: '#FFB347', // warm amber
+  TONALITY: '#7732D9', // station purple
+  TIMBRE: '#009DFF', // cyan / blue
+};
+
+function getVertexBaseColor(vertexId: string): string {
+  const info = VERTEX_INFO[vertexId];
+  if (!info) return '#009DFF';
+  return AXIS_GROUP_COLORS[info.group];
+}
 
 // ---------- CAMERA RIG ----------
 
@@ -256,7 +454,7 @@ type CameraRigProps = {
   focusPosition: [number, number, number] | null;
 };
 
-/** Camera rig that zooms to the selected node once, then lets the user drive */
+/** Camera rig that zooms to the selected node/vertex once, then lets the user drive */
 function CameraRig({ focusPosition }: CameraRigProps) {
   const controlsRef = useRef<any>(null);
   const { camera } = useThree();
@@ -319,14 +517,62 @@ function CameraRig({ focusPosition }: CameraRigProps) {
   );
 }
 
+// ---------- AXIS CYLINDER (HIGHLIGHT) ----------
+
+type AxisCylinderProps = {
+  startId: string;
+  endId: string;
+  group: AxisGroup;
+};
+
+function AxisCylinder({ startId, endId, group }: AxisCylinderProps) {
+  const startPos = getBoundaryPosition(startId);
+  const endPos = getBoundaryPosition(endId);
+
+  const start = new Vector3(startPos[0], startPos[1], startPos[2]);
+  const end = new Vector3(endPos[0], endPos[1], endPos[2]);
+
+  const direction = new Vector3().subVectors(end, start);
+  const length = direction.length();
+  const mid = new Vector3().addVectors(start, end).multiplyScalar(0.5);
+
+  // Align cylinder's Y-axis (0,1,0) with axis direction
+  const axis = direction.clone().normalize();
+  const quaternion = new Quaternion().setFromUnitVectors(
+    new Vector3(0, 1, 0),
+    axis
+  );
+
+  const color = AXIS_GROUP_COLORS[group];
+
+  return (
+    <mesh position={mid} quaternion={quaternion}>
+      {/* open-ended cylinder so it feels like a beam */}
+      <cylinderGeometry args={[0.05, 0.05, length, 24, 1, true]} />
+      <meshStandardMaterial
+        color={color}
+        emissive={color}
+        emissiveIntensity={0.7}
+        transparent
+        opacity={0.35}
+        roughness={0.25}
+        metalness={0.3}
+      />
+    </mesh>
+  );
+}
+
 // ---------- MAIN SCENE COMPONENT ----------
 
 export function GoofScene() {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [hoveredVertexId, setHoveredVertexId] = useState<string | null>(null);
+  const [selectedVertexId, setSelectedVertexId] = useState<string | null>(null);
   const [familyFilter, setFamilyFilter] = useState<'all' | GoofFamily>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [showBoundaries, setShowBoundaries] = useState<boolean>(true);
+  const [showAxes, setShowAxes] = useState<boolean>(true);
 
   const normalizedQuery = searchQuery.trim().toLowerCase();
 
@@ -348,9 +594,20 @@ export function GoofScene() {
   });
 
   const selectedNode = GOOF_NODES.find((n) => n.id === selectedId) || null;
+  const selectedVertex =
+    selectedVertexId != null ? VERTEX_INFO[selectedVertexId] : null;
 
   const selectedVisible =
     !!selectedNode && filteredNodes.some((n) => n.id === selectedNode.id);
+  const vertexVisible = !!selectedVertexId && showBoundaries;
+
+  // CAMERA FOCUS: node first, else vertex
+  const focusPosition: [number, number, number] | null =
+    selectedVisible && selectedNode
+      ? selectedNode.position
+      : vertexVisible && selectedVertexId
+      ? getBoundaryPosition(selectedVertexId)
+      : null;
 
   return (
     <div
@@ -359,14 +616,14 @@ export function GoofScene() {
         height: '100%',
         display: 'flex',
         background:
-          'radial-gradient(circle at top, #242424 0, #1E1E1E 45%, #050505 100%)'
+          'radial-gradient(circle at top, #242424 0, #1E1E1E 45%, #050505 100%)',
       }}
     >
       {/* 3D viewport */}
       <div
         style={{
           flex: 1,
-          minWidth: 0
+          minWidth: 0,
         }}
       >
         <Canvas camera={{ position: [4, 4, 4], fov: 50 }}>
@@ -378,27 +635,29 @@ export function GoofScene() {
           {/* grid with neon center line */}
           <gridHelper args={[10, 20, '#00FF00', '#2A2A2A']} />
 
-          {/* ---- BOUNDARY VERTICES + AXES + HULL (toggleable) ---- */}
+          {/* ---- AXES + BOUNDARY HULL (separate toggles) ---- */}
+
+          {/* Axis lines (dashed) */}
+          {showAxes &&
+            AXIS_LINES.map(([a, b]) => {
+              const pa = getBoundaryPosition(a);
+              const pb = getBoundaryPosition(b);
+              return (
+                <Line
+                  key={`axis-${a}-${b}`}
+                  points={[pa, pb]}
+                  color="#777777"
+                  lineWidth={1}
+                  dashed
+                  dashSize={0.25}
+                  gapSize={0.2}
+                />
+              );
+            })}
+
+          {/* Cuboctahedron hull edges + vertex markers */}
           {showBoundaries && (
             <>
-              {/* axes (dashed) */}
-              {AXIS_LINES.map(([a, b]) => {
-                const pa = getBoundaryPosition(a);
-                const pb = getBoundaryPosition(b);
-                return (
-                  <Line
-                    key={`axis-${a}-${b}`}
-                    points={[pa, pb]}
-                    color="#777777"
-                    lineWidth={1}
-                    dashed
-                    dashSize={0.25}
-                    gapSize={0.2}
-                  />
-                );
-              })}
-
-              {/* cuboctahedron hull edges */}
               {HULL_EDGES.map(([a, b]) => {
                 const pa = getBoundaryPosition(a);
                 const pb = getBoundaryPosition(b);
@@ -414,20 +673,71 @@ export function GoofScene() {
                 );
               })}
 
-              {/* vertex markers */}
-              {BOUNDARY_VERTICES.map((v) => (
-                <mesh key={v.id} position={v.position}>
-                  <sphereGeometry args={[0.06, 16, 16]} />
-                  <meshStandardMaterial
-                    color="#009DFF"
-                    emissive="#009DFF"
-                    emissiveIntensity={0.5}
-                    metalness={0.2}
-                    roughness={0.3}
-                  />
-                </mesh>
-              ))}
+              {BOUNDARY_VERTICES.map((v) => {
+                const isHovered = hoveredVertexId === v.id;
+                const isSelected = selectedVertexId === v.id;
+
+                const baseColor = getVertexBaseColor(v.id);
+
+                const radius = isSelected
+                  ? 0.11
+                  : isHovered
+                  ? 0.085
+                  : 0.06;
+
+                const emissiveColor = isSelected
+                  ? baseColor
+                  : isHovered
+                  ? '#ffffff'
+                  : baseColor;
+
+                const emissiveIntensity = isSelected
+                  ? 1.0
+                  : isHovered
+                  ? 0.7
+                  : 0.5;
+
+                return (
+                  <mesh
+                    key={v.id}
+                    position={v.position}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      setSelectedVertexId(v.id);
+                      setSelectedId(null); // clear node selection
+                    }}
+                    onPointerOver={(event) => {
+                      event.stopPropagation();
+                      setHoveredVertexId(v.id);
+                    }}
+                    onPointerOut={(event) => {
+                      event.stopPropagation();
+                      setHoveredVertexId((current) =>
+                        current === v.id ? null : current
+                      );
+                    }}
+                  >
+                    <sphereGeometry args={[radius, 16, 16]} />
+                    <meshStandardMaterial
+                      color={baseColor}
+                      emissive={emissiveColor}
+                      emissiveIntensity={emissiveIntensity}
+                      metalness={0.2}
+                      roughness={0.3}
+                    />
+                  </mesh>
+                );
+              })}
             </>
+          )}
+
+          {/* Highlight cylinder for selected axis (independent of axis-line toggle) */}
+          {selectedVertex && (
+            <AxisCylinder
+              startId={selectedVertex.id}
+              endId={selectedVertex.oppositeId}
+              group={selectedVertex.group}
+            />
           )}
 
           {/* GOOF centroids */}
@@ -457,6 +767,7 @@ export function GoofScene() {
                 onClick={(event) => {
                   event.stopPropagation();
                   setSelectedId(node.id);
+                  setSelectedVertexId(null); // clear vertex selection
                 }}
               >
                 <sphereGeometry args={[radius, 24, 24]} />
@@ -479,13 +790,7 @@ export function GoofScene() {
             );
           })}
 
-          <CameraRig
-            focusPosition={
-              selectedVisible && selectedNode
-                ? selectedNode.position
-                : null
-            }
-          />
+          <CameraRig focusPosition={focusPosition} />
         </Canvas>
       </div>
 
@@ -502,7 +807,7 @@ export function GoofScene() {
           gap: '0.75rem',
           background:
             'linear-gradient(180deg, rgba(10,10,10,0.98) 0%, rgba(5,5,5,0.98) 100%)',
-          boxShadow: '0 0 22px rgba(0,0,0,0.6)'
+          boxShadow: '0 0 22px rgba(0,0,0,0.6)',
         }}
       >
         {/* Controls */}
@@ -510,7 +815,7 @@ export function GoofScene() {
           style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: '0.5rem'
+            gap: '0.5rem',
           }}
         >
           <div
@@ -519,7 +824,7 @@ export function GoofScene() {
               letterSpacing: '0.16em',
               textTransform: 'uppercase',
               opacity: 0.8,
-              color: '#00FF00'
+              color: '#00FF00',
             }}
           >
             Filters
@@ -538,7 +843,7 @@ export function GoofScene() {
               border: '1px solid rgba(255,255,255,0.16)',
               backgroundColor: '#111111',
               color: '#f5f5f5',
-              outline: 'none'
+              outline: 'none',
             }}
           />
 
@@ -546,14 +851,14 @@ export function GoofScene() {
             style={{
               display: 'flex',
               flexWrap: 'wrap',
-              gap: '0.35rem'
+              gap: '0.35rem',
             }}
           >
             {[
               { id: 'all' as const, label: 'All' },
               { id: 'high-energy' as const, label: 'High Energy' },
               { id: 'groove' as const, label: 'Groove / Dance' },
-              { id: 'dreamy' as const, label: 'Dreamy / Chill' }
+              { id: 'dreamy' as const, label: 'Dreamy / Chill' },
             ].map((option) => {
               const isActive = familyFilter === option.id;
               return (
@@ -570,7 +875,7 @@ export function GoofScene() {
                       : '1px solid rgba(255,255,255,0.2)',
                     backgroundColor: isActive ? '#0b2810' : 'transparent',
                     color: isActive ? '#baffc8' : '#dddddd',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
                   }}
                 >
                   {option.label}
@@ -582,51 +887,96 @@ export function GoofScene() {
           <div
             style={{
               fontSize: '0.7rem',
-              opacity: 0.65
+              opacity: 0.65,
             }}
           >
             Showing {filteredNodes.length} / {GOOF_NODES.length} nodes.
           </div>
 
-          {/* Boundary toggle */}
+          {/* Axis / Boundary toggles */}
           <div
             style={{
               marginTop: '0.25rem',
               display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '0.5rem'
+              flexDirection: 'column',
+              gap: '0.4rem',
             }}
           >
-            <span
+            {/* Axis toggle */}
+            <div
               style={{
-                fontSize: '0.7rem',
-                opacity: 0.75
-              }}
-            >
-              Show boundary hull
-            </span>
-            <label
-              style={{
-                display: 'inline-flex',
+                display: 'flex',
                 alignItems: 'center',
-                gap: '0.35rem',
-                cursor: 'pointer',
-                fontSize: '0.7rem'
+                justifyContent: 'space-between',
+                gap: '0.5rem',
               }}
             >
-              <input
-                type="checkbox"
-                checked={showBoundaries}
-                onChange={(e) => setShowBoundaries(e.target.checked)}
-                style={{ accentColor: '#00FF00' }}
-              />
-              <span>{showBoundaries ? 'On' : 'Off'}</span>
-            </label>
+              <span
+                style={{
+                  fontSize: '0.7rem',
+                  opacity: 0.75,
+                }}
+              >
+                Show axis lines
+              </span>
+              <label
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                  cursor: 'pointer',
+                  fontSize: '0.7rem',
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={showAxes}
+                  onChange={(e) => setShowAxes(e.target.checked)}
+                  style={{ accentColor: '#00FF00' }}
+                />
+                <span>{showAxes ? 'On' : 'Off'}</span>
+              </label>
+            </div>
+
+            {/* Boundary hull toggle */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '0.5rem',
+              }}
+            >
+              <span
+                style={{
+                  fontSize: '0.7rem',
+                  opacity: 0.75,
+                }}
+              >
+                Show boundary hull
+              </span>
+              <label
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                  cursor: 'pointer',
+                  fontSize: '0.7rem',
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={showBoundaries}
+                  onChange={(e) => setShowBoundaries(e.target.checked)}
+                  style={{ accentColor: '#00FF00' }}
+                />
+                <span>{showBoundaries ? 'On' : 'Off'}</span>
+              </label>
+            </div>
           </div>
         </div>
 
-        {/* Node details */}
+        {/* Selection details (node OR vertex) */}
         <div
           style={{
             marginTop: '0.4rem',
@@ -635,7 +985,7 @@ export function GoofScene() {
             display: 'flex',
             flexDirection: 'column',
             gap: '0.6rem',
-            flexGrow: 1
+            flexGrow: 1,
           }}
         >
           <div
@@ -644,13 +994,14 @@ export function GoofScene() {
               letterSpacing: '0.16em',
               textTransform: 'uppercase',
               fontSize: '0.7rem',
-              color: '#00FF00'
+              color: '#00FF00',
             }}
           >
-            Node Details
+            Selection Details
           </div>
 
           {selectedNode ? (
+            // --- NODE DETAIL VIEW ---
             <>
               <div>
                 <div
@@ -661,7 +1012,7 @@ export function GoofScene() {
                     marginBottom: '0.15rem',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '0.35rem'
+                    gap: '0.35rem',
                   }}
                 >
                   <span>{selectedNode.name}</span>
@@ -671,14 +1022,14 @@ export function GoofScene() {
                       height: '8px',
                       borderRadius: '999px',
                       backgroundColor: getNodeBaseColor(selectedNode),
-                      boxShadow: `0 0 12px ${getNodeBaseColor(selectedNode)}`
+                      boxShadow: `0 0 12px ${getNodeBaseColor(selectedNode)}`,
                     }}
                   />
                 </div>
                 <div
                   style={{
                     fontSize: '0.75rem',
-                    opacity: 0.75
+                    opacity: 0.75,
                   }}
                 >
                   {selectedNode.genre}
@@ -688,7 +1039,7 @@ export function GoofScene() {
               <p
                 style={{
                   lineHeight: 1.4,
-                  opacity: 0.9
+                  opacity: 0.9,
                 }}
               >
                 {selectedNode.description}
@@ -701,13 +1052,13 @@ export function GoofScene() {
                   marginTop: '0.2rem',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '0.4rem'
+                  gap: '0.4rem',
                 }}
               >
                 <div
                   style={{
                     fontSize: '0.75rem',
-                    opacity: 0.8
+                    opacity: 0.8,
                   }}
                 >
                   Example track:
@@ -716,7 +1067,7 @@ export function GoofScene() {
                   style={{
                     display: 'flex',
                     flexWrap: 'wrap',
-                    gap: '0.4rem'
+                    gap: '0.4rem',
                   }}
                 >
                   {selectedNode.links?.spotify && (
@@ -732,7 +1083,7 @@ export function GoofScene() {
                         textDecoration: 'none',
                         color: '#c9ffd7',
                         background:
-                          'radial-gradient(circle, rgba(0,255,0,0.2) 0, transparent 70%)'
+                          'radial-gradient(circle, rgba(0,255,0,0.2) 0, transparent 70%)',
                       }}
                     >
                       Open on Spotify
@@ -751,7 +1102,7 @@ export function GoofScene() {
                         textDecoration: 'none',
                         color: '#f0ddff',
                         background:
-                          'radial-gradient(circle, rgba(119,50,217,0.26) 0, transparent 70%)'
+                          'radial-gradient(circle, rgba(119,50,217,0.26) 0, transparent 70%)',
                       }}
                     >
                       Open on YouTube
@@ -762,7 +1113,10 @@ export function GoofScene() {
 
               <button
                 type="button"
-                onClick={() => setSelectedId(null)}
+                onClick={() => {
+                  setSelectedId(null);
+                  setSelectedVertexId(null);
+                }}
                 style={{
                   marginTop: 'auto',
                   alignSelf: 'flex-start',
@@ -772,24 +1126,153 @@ export function GoofScene() {
                   border: '1px solid rgba(255,255,255,0.25)',
                   background: 'transparent',
                   color: '#dddddd',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                }}
+              >
+                Clear selection
+              </button>
+            </>
+          ) : selectedVertex ? (
+            // --- VERTEX (AXIS) DETAIL VIEW ---
+            <>
+              <div>
+                <div
+                  style={{
+                    fontSize: '0.95rem',
+                    fontWeight: 600,
+                    letterSpacing: '0.08em',
+                    marginBottom: '0.15rem',
+                    textTransform: 'uppercase',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.15rem',
+                  }}
+                >
+                  <span>{selectedVertex.title}</span>
+                  <span
+                    style={{
+                      fontSize: '0.72rem',
+                      opacity: 0.8,
+                      color: '#aaaaaa',
+                    }}
+                  >
+                    {selectedVertex.group} · {selectedVertex.dimension}
+                  </span>
+                </div>
+
+                <div
+                  style={{
+                    fontSize: '0.8rem',
+                    opacity: 0.85,
+                  }}
+                >
+                  <strong>{selectedVertex.axisLabel}</strong>{' '}
+                  <span style={{ opacity: 0.7 }}>
+                    ({selectedVertex.rangeHint})
+                  </span>
+                </div>
+              </div>
+
+              <p
+                style={{
+                  lineHeight: 1.4,
+                  opacity: 0.9,
+                }}
+              >
+                {selectedVertex.description}
+              </p>
+
+              <div
+                style={{
+                  borderTop: '1px solid rgba(255,255,255,0.08)',
+                  paddingTop: '0.6rem',
+                  marginTop: '0.2rem',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.35rem',
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: '0.75rem',
+                    opacity: 0.8,
+                  }}
+                >
+                  Example genres:
+                </div>
+                <div
+                  style={{
+                    fontSize: '0.78rem',
+                    opacity: 0.9,
+                  }}
+                >
+                  {selectedVertex.exampleGenres}
+                </div>
+              </div>
+
+              {selectedVertex.oppositeId && (
+                <div
+                  style={{
+                    borderTop: '1px solid rgba(255,255,255,0.08)',
+                    paddingTop: '0.6rem',
+                    marginTop: '0.2rem',
+                    fontSize: '0.75rem',
+                    opacity: 0.85,
+                    lineHeight: 1.4,
+                  }}
+                >
+                  <div
+                    style={{
+                      marginBottom: '0.15rem',
+                      opacity: 0.8,
+                    }}
+                  >
+                    Opposite end of this axis:
+                  </div>
+                  <div>
+                    <strong>
+                      {VERTEX_INFO[selectedVertex.oppositeId].title}
+                    </strong>{' '}
+                    ({VERTEX_INFO[selectedVertex.oppositeId].axisLabel})
+                  </div>
+                </div>
+              )}
+
+              <button
+                type="button"
+                onClick={() => setSelectedVertexId(null)}
+                style={{
+                  marginTop: 'auto',
+                  alignSelf: 'flex-start',
+                  fontSize: '0.75rem',
+                  padding: '0.25rem 0.6rem',
+                  borderRadius: '999px',
+                  border: '1px solid rgba(255,255,255,0.25)',
+                  background: 'transparent',
+                  color: '#dddddd',
+                  cursor: 'pointer',
                 }}
               >
                 Clear selection
               </button>
             </>
           ) : (
+            // --- DEFAULT HELP TEXT ---
             <div
               style={{
                 opacity: 0.75,
-                lineHeight: 1.4
+                lineHeight: 1.4,
               }}
             >
-              Click a floating node in the map to inspect its{' '}
+              Click a{' '}
               <span style={{ fontStyle: 'italic', color: '#00FF00' }}>
-                GOOF signature
+                genre node
               </span>{' '}
-              and open an example transmission.
+              to inspect its GOOF signature, or click a{' '}
+              <span style={{ fontStyle: 'italic', color: '#009DFF' }}>
+                axis vertex
+              </span>{' '}
+              to see what musical quality that corner of the nebula encodes.
             </div>
           )}
         </div>
@@ -801,7 +1284,7 @@ export function GoofScene() {
             paddingTop: '0.6rem',
             borderTop: '1px solid rgba(255,255,255,0.08)',
             fontSize: '0.72rem',
-            opacity: 0.8
+            opacity: 0.8,
           }}
         >
           <div
@@ -810,17 +1293,19 @@ export function GoofScene() {
               textTransform: 'uppercase',
               fontSize: '0.68rem',
               marginBottom: '0.4rem',
-              color: '#aaaaaa'
+              color: '#aaaaaa',
             }}
           >
             Legend
           </div>
 
+          {/* Node family legend */}
           <div
             style={{
               display: 'flex',
               gap: '0.6rem',
-              marginBottom: '0.45rem'
+              marginBottom: '0.45rem',
+              flexWrap: 'wrap',
             }}
           >
             <LegendSwatch color="#00FF00" label="High Energy" />
@@ -830,7 +1315,8 @@ export function GoofScene() {
 
           <div
             style={{
-              lineHeight: 1.4
+              lineHeight: 1.4,
+              marginBottom: '0.6rem',
             }}
           >
             <strong>Size</strong> = composite energy (tempo, rhythmic
@@ -838,6 +1324,90 @@ export function GoofScene() {
             <br />
             <strong>Position</strong> encodes the 6-axis GOOF signature
             (Tempo, Tonality, Timbre) in 3D space.
+          </div>
+
+          {/* Axis legend strip */}
+          <div
+            style={{
+              borderTop: '1px solid rgba(255,255,255,0.08)',
+              paddingTop: '0.5rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.35rem',
+            }}
+          >
+            <div
+              style={{
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+                fontSize: '0.68rem',
+                color: '#aaaaaa',
+              }}
+            >
+              Axis Dimensions
+            </div>
+
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.25rem',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                }}
+              >
+                <LegendSwatch color="#FFB347" label="Tempo" />
+                <span
+                  style={{
+                    fontSize: '0.7rem',
+                    opacity: 0.85,
+                  }}
+                >
+                  Rhythm Speed · Rhythm Complexity
+                </span>
+              </div>
+
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                }}
+              >
+                <LegendSwatch color="#7732D9" label="Tonality" />
+                <span
+                  style={{
+                    fontSize: '0.7rem',
+                    opacity: 0.85,
+                  }}
+                >
+                  Harmonic Quality · Harmonic Density
+                </span>
+              </div>
+
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                }}
+              >
+                <LegendSwatch color="#009DFF" label="Timbre" />
+                <span
+                  style={{
+                    fontSize: '0.7rem',
+                    opacity: 0.85,
+                  }}
+                >
+                  Sonic Temperature · Synthetic Value
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </aside>
@@ -852,7 +1422,7 @@ function LegendSwatch({ color, label }: { color: string; label: string }) {
       style={{
         display: 'flex',
         alignItems: 'center',
-        gap: '0.25rem'
+        gap: '0.25rem',
       }}
     >
       <span
@@ -861,7 +1431,8 @@ function LegendSwatch({ color, label }: { color: string; label: string }) {
           height: '10px',
           borderRadius: '999px',
           backgroundColor: color,
-          boxShadow: `0 0 8px ${color}`
+          boxShadow: `0 0 8px ${color}`,
+          flexShrink: 0,
         }}
       />
       <span>{label}</span>
