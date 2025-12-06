@@ -33,7 +33,85 @@ type GoofNode = {
   links?: GoofLinks;
 };
 
-const GOOF_NODES: GoofNode[] = goofsRaw as GoofNode[];
+type Vec3 = [number, number, number];
+
+// visual “inflation” factor for positions
+const POSITION_SCALE = 2.0;
+
+function computeSongPosition(values: GoofValues): Vec3 {
+  // v1 = positive end, v2 = negative end for each axis
+  const vertices: [Vec3, Vec3][] = [
+    // tempo_speed:      (-2 slow … +2 fast)
+    [[ 2,  2,  0], [-2, -2,  0]],
+    // tempo_complexity: (-2 simple … +2 complex)
+    [[ 2, -2,  0], [-2,  2,  0]],
+    // tonality_harmonic: (-2 dissonant … +2 consonant)
+    [[ 2,  0,  2], [-2,  0, -2]],
+    // tonality_density: (-2 simple … +2 dense)
+    [[-2,  0,  2], [ 2,  0, -2]],
+    // timbre_warmth:    (-2 cold … +2 warm)
+    [[ 0,  2,  2], [ 0, -2, -2]],
+    // timbre_synthetic: (-2 organic … +2 synthetic)  (+ side → Vertex12)
+    [[ 0, -2,  2], [ 0,  2, -2]],
+  ];
+
+  const valueList = [
+    values.tempoSpeed,
+    values.tempoComplexity,
+    values.harmonicQuality,
+    values.harmonicDensity,
+    values.sonicTemperature,
+    values.sonicSynthetic,
+  ];
+
+  let position: Vec3 = [0, 0, 0];
+
+  for (let i = 0; i < vertices.length; i++) {
+    const [v1, v2] = vertices[i];
+    const raw = valueList[i];
+
+    // clamp into [-2, 2]
+    const v = Math.max(-2, Math.min(2, raw));
+
+    const w2 = (2 - v) / 4.0; // weight for negative endpoint
+    const w1 = (2 + v) / 4.0; // weight for positive endpoint
+
+    const contrib: Vec3 = [
+      v2[0] * w2 + v1[0] * w1,
+      v2[1] * w2 + v1[1] * w1,
+      v2[2] * w2 + v1[2] * w1,
+    ];
+
+    position = [
+      position[0] + contrib[0],
+      position[1] + contrib[1],
+      position[2] + contrib[2],
+    ];
+  }
+
+  // average over 6 axes, then inflate for visual spread
+  const avg: Vec3 = [
+    position[0] / 6.0,
+    position[1] / 6.0,
+    position[2] / 6.0,
+  ];
+
+  return [
+    avg[0] * POSITION_SCALE,
+    avg[1] * POSITION_SCALE,
+    avg[2] * POSITION_SCALE,
+  ];
+}
+
+type GoofInput = Omit<GoofNode, 'position'> & {
+  position?: [number, number, number];
+};
+
+const GOOF_NODES: GoofNode[] = (goofsRaw as GoofInput[]).map((raw) => ({
+  ...raw,
+  // ignore any position in JSON and compute from 6D GOOF values instead
+  position: computeSongPosition(raw.values),
+}));
 
 type GoofFamily = 'high-energy' | 'groove' | 'dreamy' | 'other';
 
@@ -73,7 +151,7 @@ function getNodeBaseColor(node: GoofNode): string {
   return getFamilyColor(getNodeFamily(node));
 }
 
-/** Radius scaling based on a “energy” mix of traits */
+/** Radius scaling based on an “energy” mix of traits */
 function getNodeRadius(
   node: GoofNode,
   mode: 'default' | 'hovered' | 'selected'
