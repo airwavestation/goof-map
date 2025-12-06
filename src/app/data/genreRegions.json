@@ -1,0 +1,39 @@
+[
+    {
+      "id": "genre_ambient",
+      "name": "Ambient / Downtempo",
+      "bounds": {
+        "sonicSynthetic":   { "min": -0.6, "max": 1.0 },
+        "sonicTemperature": { "min":  0.4, "max": 2.0 },
+        "tempoSpeed":       { "min": -2.0, "max": -1.0 },
+        "tempoComplexity":  { "min": -2.0, "max": -0.8 },
+        "harmonicQuality":  { "min":  0.2, "max": 1.8 },
+        "harmonicDensity":  { "min": -0.3, "max": 1.3 }
+      }
+    },
+    {
+      "id": "genre_synthwave",
+      "name": "Synthwave",
+      "bounds": {
+        "sonicSynthetic":   { "min": 1.4, "max": 2.0 },
+        "sonicTemperature": { "min": 1.4, "max": 2.0 },
+        "tempoSpeed":       { "min": -0.7, "max": 0.5 },
+        "tempoComplexity":  { "min": -1.4, "max": -0.2 },
+        "harmonicQuality":  { "min": 1.0, "max": 2.0 },
+        "harmonicDensity":  { "min": 0.0, "max": 1.2 }
+      }
+    },
+    {
+      "id": "genre_house",
+      "name": "House",
+      "bounds": {
+        "sonicSynthetic":   { "min": 0.1, "max": 1.7 },
+        "sonicTemperature": { "min": 0.2, "max": 1.8 },
+        "tempoSpeed":       { "min": -0.4, "max": 1.2 },
+        "tempoComplexity":  { "min": -1.5, "max": 0.1 },
+        "harmonicQuality":  { "min": 0.2, "max": 1.8 },
+        "harmonicDensity":  { "min": -0.4, "max": 1.2 }
+      }
+    }
+  ]
+  

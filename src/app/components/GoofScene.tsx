@@ -5,6 +5,7 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Line } from '@react-three/drei';
 import { Vector3, Quaternion } from 'three';
 import goofsRaw from '../data/goofs.json';
+import genreRegionsRaw from '../data/genreRegions.json';
 
 // ---------- GOOF NODE TYPES ----------
 
@@ -103,6 +104,72 @@ function computeSongPosition(values: GoofValues): Vec3 {
   ];
 }
 
+// ---------- GENRE REGIONS (CLOUDS) ----------
+
+type Range = { min: number; max: number };
+
+type GenreRegionBounds = {
+  sonicSynthetic: Range;
+  sonicTemperature: Range;
+  tempoSpeed: Range;
+  tempoComplexity: Range;
+  harmonicQuality: Range;
+  harmonicDensity: Range;
+};
+
+type GenreRegion = {
+  id: string;
+  name: string;
+  bounds: GenreRegionBounds;
+};
+
+const GENRE_REGIONS = genreRegionsRaw as GenreRegion[];
+
+const GENRE_REGION_COLORS: Record<string, string> = {
+  genre_ambient: '#7732D9', // dreamy purple
+  genre_synthwave: '#FF6AD5', // neon pink
+  genre_house: '#66FF66', // groove green
+};
+
+function getRegionColor(region: GenreRegion): string {
+  return GENRE_REGION_COLORS[region.id] ?? '#8888ff';
+}
+
+const POINTS_PER_REGION = 160;
+
+function randInRange(range: Range): number {
+  return range.min + Math.random() * (range.max - range.min);
+}
+
+function generateRegionPointClouds(): Record<string, Vec3[]> {
+  const clouds: Record<string, Vec3[]> = {};
+
+  for (const region of GENRE_REGIONS) {
+    const points: Vec3[] = [];
+    const b = region.bounds;
+
+    for (let i = 0; i < POINTS_PER_REGION; i++) {
+      const values: GoofValues = {
+        tempoSpeed: randInRange(b.tempoSpeed),
+        tempoComplexity: randInRange(b.tempoComplexity),
+        harmonicQuality: randInRange(b.harmonicQuality),
+        harmonicDensity: randInRange(b.harmonicDensity),
+        sonicTemperature: randInRange(b.sonicTemperature),
+        sonicSynthetic: randInRange(b.sonicSynthetic),
+      };
+
+      points.push(computeSongPosition(values));
+    }
+
+    clouds[region.id] = points;
+  }
+
+  return clouds;
+}
+
+// static clouds: same layout each load, not re-randomized every frame
+const REGION_POINT_CLOUDS = generateRegionPointClouds();
+
 type GoofInput = Omit<GoofNode, 'position'> & {
   position?: [number, number, number];
 };
@@ -148,6 +215,13 @@ function getFamilyColor(family: GoofFamily): string {
 }
 
 function getNodeBaseColor(node: GoofNode): string {
+  const g = node.genre.toLowerCase();
+
+  // Synthwave centroid: match the neon pink of the Synthwave cloud
+  if (g.includes('synthwave')) {
+    return '#FF6AD5';
+  }
+
   return getFamilyColor(getNodeFamily(node));
 }
 
@@ -740,7 +814,38 @@ export function GoofScene() {
             />
           )}
 
-          {/* GOOF centroids */}
+          {/* GENRE CLOUDS (Ambient / Synthwave / House) */}
+          {GENRE_REGIONS.map((region) => {
+            const points = REGION_POINT_CLOUDS[region.id] || [];
+            const color = getRegionColor(region);
+
+            return (
+              <React.Fragment key={region.id}>
+                {points.map((pos, idx) => (
+                  <mesh
+                    key={`${region.id}-pt-${idx}`}
+                    position={pos}
+                    // clouds are visual only; ignore pointer events
+                    raycast={null as any}
+                  >
+                    <sphereGeometry args={[0.035, 10, 10]} />
+                    <meshStandardMaterial
+                      color={color}
+                      emissive={color}
+                      emissiveIntensity={0.15}
+                      transparent
+                      opacity={0.25}
+                      roughness={0.3}
+                      metalness={0.1}
+                      depthWrite={false}
+                    />
+                  </mesh>
+                ))}
+              </React.Fragment>
+            );
+          })}
+
+          {/* GOOF centroids (currently: genre/example nodes) */}
           {filteredNodes.map((node) => {
             const isHovered = hoveredId === node.id;
             const isSelected = selectedId === node.id;

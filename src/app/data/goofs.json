@@ -1,213 +1,56 @@
 [
-    {
-      "id": "liquid-dnb",
-      "name": "Liquid Drum & Bass",
-      "genre": "Liquid DnB",
-      "description": "Rolling breaks, warm bass, and euphoric pads for late-night train rides.",
-      "position": [0.9, 0.7, 0.2],
-      "values": {
-        "tempoSpeed": 1.4,
-        "tempoComplexity": 1.2,
-        "harmonicQuality": 0.8,
-        "harmonicDensity": 0.9,
-        "sonicTemperature": 0.3,
-        "sonicSynthetic": 1.3
-      },
-      "links": {
-        "spotify": "https://open.spotify.com/",
-        "youtube": "https://www.youtube.com/"
-      }
+  {
+    "id": "house-centroid",
+    "name": "House (Cloud Center)",
+    "genre": "House",
+    "description": "Balanced dancefloor pulse: steady groove, warm chords, and human-friendly repetition.",
+    "values": {
+      "tempoSpeed": 0.4,
+      "tempoComplexity": -0.7,
+      "harmonicQuality": 1.0,
+      "harmonicDensity": 0.4,
+      "sonicTemperature": 1.0,
+      "sonicSynthetic": 0.9
     },
-    {
-      "id": "neurofunk",
-      "name": "Neurofunk",
-      "genre": "Drum & Bass",
-      "description": "Tightly wound bass design, surgical drums, and dark futurist tension.",
-      "position": [1.4, 0.3, -0.6],
-      "values": {
-        "tempoSpeed": 1.6,
-        "tempoComplexity": 1.4,
-        "harmonicQuality": -0.4,
-        "harmonicDensity": 1.1,
-        "sonicTemperature": -0.2,
-        "sonicSynthetic": 1.7
-      },
-      "links": {
-        "spotify": "https://open.spotify.com/",
-        "youtube": "https://www.youtube.com/"
-      }
+    "links": {
+      "spotify": "https://open.spotify.com/",
+      "youtube": "https://www.youtube.com/"
+    }
+  },
+  {
+    "id": "synthwave-centroid",
+    "name": "Synthwave (Cloud Center)",
+    "genre": "Synthwave",
+    "description": "Retro-futurist neon score: lush consonant synths, mid-tempo stride, and cinematic nostalgia.",
+    "values": {
+      "tempoSpeed": -0.1,
+      "tempoComplexity": -0.8,
+      "harmonicQuality": 1.5,
+      "harmonicDensity": 0.6,
+      "sonicTemperature": 1.7,
+      "sonicSynthetic": 1.7
     },
-    {
-      "id": "uplifting-trance",
-      "name": "Uplifting Trance",
-      "genre": "Trance",
-      "description": "Big supersaws, long builds, and emotional payoff on the drop.",
-      "position": [1.2, 0.9, 0.9],
-      "values": {
-        "tempoSpeed": 1.2,
-        "tempoComplexity": 0.6,
-        "harmonicQuality": 1.7,
-        "harmonicDensity": 1.3,
-        "sonicTemperature": 1.2,
-        "sonicSynthetic": 1.1
-      },
-      "links": {
-        "spotify": "https://open.spotify.com/",
-        "youtube": "https://www.youtube.com/"
-      }
+    "links": {
+      "spotify": "https://open.spotify.com/",
+      "youtube": "https://www.youtube.com/"
+    }
+  },
+  {
+    "id": "ambient-centroid",
+    "name": "Ambient (Cloud Center)",
+    "genre": "Ambient",
+    "description": "Slow-motion weather system: gently evolving harmony, low rhythmic presence, and soft glow.",
+    "values": {
+      "tempoSpeed": -1.5,
+      "tempoComplexity": -1.4,
+      "harmonicQuality": 1.0,
+      "harmonicDensity": 0.5,
+      "sonicTemperature": 1.2,
+      "sonicSynthetic": 0.2
     },
-    {
-      "id": "techno",
-      "name": "Driving Techno",
-      "genre": "Techno",
-      "description": "Relentless four-on-the-floor with hypnotic repetition and subtle shifts.",
-      "position": [0.8, -0.4, 0.1],
-      "values": {
-        "tempoSpeed": 1.3,
-        "tempoComplexity": 0.4,
-        "harmonicQuality": -0.6,
-        "harmonicDensity": 0.2,
-        "sonicTemperature": 0.1,
-        "sonicSynthetic": 1.5
-      },
-      "links": {
-        "spotify": "https://open.spotify.com/",
-        "youtube": "https://www.youtube.com/"
-      }
-    },
-    {
-      "id": "deep-house",
-      "name": "Deep House",
-      "genre": "House",
-      "description": "Smooth grooves, soulful chords, and late-night lounge energy.",
-      "position": [0.3, 0.3, 0.8],
-      "values": {
-        "tempoSpeed": 0.4,
-        "tempoComplexity": 0.1,
-        "harmonicQuality": 1.1,
-        "harmonicDensity": 0.8,
-        "sonicTemperature": 1.0,
-        "sonicSynthetic": 0.3
-      },
-      "links": {
-        "spotify": "https://open.spotify.com/",
-        "youtube": "https://www.youtube.com/"
-      }
-    },
-    {
-      "id": "lofi",
-      "name": "Lo-Fi Beats",
-      "genre": "Lo-Fi Hip Hop",
-      "description": "Dusty drums, soft keys, and tape-warped comfort for background focus.",
-      "position": [-0.3, -0.8, 0.6],
-      "values": {
-        "tempoSpeed": -0.6,
-        "tempoComplexity": -0.8,
-        "harmonicQuality": 0.7,
-        "harmonicDensity": -0.2,
-        "sonicTemperature": 1.4,
-        "sonicSynthetic": -0.6
-      },
-      "links": {
-        "spotify": "https://open.spotify.com/",
-        "youtube": "https://www.youtube.com/"
-      }
-    },
-    {
-      "id": "ambient-drone",
-      "name": "Ambient Drone",
-      "genre": "Ambient",
-      "description": "Slowly evolving textures that feel more like weather than songs.",
-      "position": [-0.9, -1.2, 0.1],
-      "values": {
-        "tempoSpeed": -1.8,
-        "tempoComplexity": -1.6,
-        "harmonicQuality": -0.3,
-        "harmonicDensity": 1.0,
-        "sonicTemperature": -0.5,
-        "sonicSynthetic": -1.4
-      },
-      "links": {
-        "spotify": "https://open.spotify.com/",
-        "youtube": "https://www.youtube.com/"
-      }
-    },
-    {
-      "id": "future-garage",
-      "name": "Future Garage",
-      "genre": "Garage",
-      "description": "Shuffling drums, atmospheric pads, and emotional vocal chops.",
-      "position": [-0.2, 0.6, 0.4],
-      "values": {
-        "tempoSpeed": 0.3,
-        "tempoComplexity": 0.8,
-        "harmonicQuality": 0.4,
-        "harmonicDensity": 0.6,
-        "sonicTemperature": 0.2,
-        "sonicSynthetic": 0.4
-      },
-      "links": {
-        "spotify": "https://open.spotify.com/",
-        "youtube": "https://www.youtube.com/"
-      }
-    },
-    {
-      "id": "riddim",
-      "name": "Riddim Dubstep",
-      "genre": "Dubstep",
-      "description": "Minimalist, lurching grooves built around one huge, obnoxious idea.",
-      "position": [0.5, -0.1, -0.9],
-      "values": {
-        "tempoSpeed": 0.9,
-        "tempoComplexity": 0.2,
-        "harmonicQuality": -0.8,
-        "harmonicDensity": 0.3,
-        "sonicTemperature": -0.4,
-        "sonicSynthetic": 1.6
-      },
-      "links": {
-        "spotify": "https://open.spotify.com/",
-        "youtube": "https://www.youtube.com/"
-      }
-    },
-    {
-      "id": "hardstyle",
-      "name": "Hardstyle",
-      "genre": "Hard Dance",
-      "description": "Pounding kicks, festival supersaw hooks, and high-energy catharsis.",
-      "position": [1.6, -0.7, -0.3],
-      "values": {
-        "tempoSpeed": 1.9,
-        "tempoComplexity": 0.9,
-        "harmonicQuality": 0.5,
-        "harmonicDensity": 0.7,
-        "sonicTemperature": 1.5,
-        "sonicSynthetic": 1.4
-      },
-      "links": {
-        "spotify": "https://open.spotify.com/",
-        "youtube": "https://www.youtube.com/"
-      }
-    },
-    {
-      "id": "chillwave",
-      "name": "Chillwave",
-      "genre": "Indie Electronic",
-      "description": "Hazy nostalgia, sidechained synths, and VHS-sunset memory fog.",
-      "position": [-0.4, 0.2, 0.9],
-      "values": {
-        "tempoSpeed": -0.2,
-        "tempoComplexity": -0.1,
-        "harmonicQuality": 0.9,
-        "harmonicDensity": 0.5,
-        "sonicTemperature": 1.3,
-        "sonicSynthetic": 0.2
-      },
-      "links": {
-        "spotify": "https://open.spotify.com/",
-        "youtube": "https://www.youtube.com/"
-      }
-    } 
-  ]
-  
-  
+    "links": {
+      "spotify": "https://open.spotify.com/",
+      "youtube": "https://www.youtube.com/"
+    }
+  }
+]
