@@ -818,42 +818,20 @@ function SpacetimeGrid({ visible }: { visible: boolean }) {
 
 // ---------- MAIN SCENE COMPONENT ----------
 
-export function GoofScene() {
+export function GenreMap() {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [hoveredVertexId, setHoveredVertexId] = useState<string | null>(null);
   const [selectedVertexId, setSelectedVertexId] = useState<string | null>(null);
-  const [familyFilter, setFamilyFilter] = useState<'all' | GoofFamily>('all');
-  const [searchQuery, setSearchQuery] = useState<string>('');
   const [showBoundaries, setShowBoundaries] = useState<boolean>(true);
   const [showAxes, setShowAxes] = useState<boolean>(true);
   const [showGrid, setShowGrid] = useState<boolean>(true);
-
-  const normalizedQuery = searchQuery.trim().toLowerCase();
-
-  const filteredNodes = GOOF_NODES.filter((node) => {
-    const family = getNodeFamily(node);
-
-    if (familyFilter !== 'all' && family !== familyFilter) {
-      return false;
-    }
-
-    if (normalizedQuery) {
-      const text = `${node.name} ${node.genre}`.toLowerCase();
-      if (!text.includes(normalizedQuery)) {
-        return false;
-      }
-    }
-
-    return true;
-  });
 
   const selectedNode = GOOF_NODES.find((n) => n.id === selectedId) || null;
   const selectedVertex =
     selectedVertexId != null ? VERTEX_INFO[selectedVertexId] : null;
 
-  const selectedVisible =
-    !!selectedNode && filteredNodes.some((n) => n.id === selectedNode.id);
+  const selectedVisible = !!selectedNode;
   const vertexVisible = !!selectedVertexId && showBoundaries;
 
   // CAMERA FOCUS: node first, else vertex
@@ -1030,7 +1008,7 @@ export function GoofScene() {
           })}
 
           {/* GOOF centroids (tracks – clickable) */}
-          {filteredNodes.map((node) => {
+          {GOOF_NODES.map((node) => {
             const isHovered = hoveredId === node.id;
             const isSelected = selectedId === node.id;
 
@@ -1099,204 +1077,265 @@ export function GoofScene() {
           boxShadow: '0 0 22px rgba(0,0,0,0.6)',
         }}
       >
-        {/* Controls */}
+        {/* Controls - Power Strip Style */}
         <div
           style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: '0.5rem',
+            gap: '0.75rem',
           }}
         >
-          <div
-            style={{
-              fontSize: '0.7rem',
-              letterSpacing: '0.16em',
-              textTransform: 'uppercase',
-              opacity: 0.8,
-              color: '#00FF00',
-            }}
-          >
-            Filters
-          </div>
-
-          <input
-            type="text"
-            placeholder="Search by name or genre…"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            style={{
-              width: '100%',
-              fontSize: '0.8rem',
-              padding: '0.4rem 0.5rem',
-              borderRadius: '4px',
-              border: '1px solid rgba(255,255,255,0.16)',
-              backgroundColor: '#111111',
-              color: '#f5f5f5',
-              outline: 'none',
-            }}
-          />
-
+          {/* Power Strip Header */}
           <div
             style={{
               display: 'flex',
-              flexWrap: 'wrap',
-              gap: '0.35rem',
+              alignItems: 'center',
+              gap: '0.5rem',
             }}
           >
-            {[
-              { id: 'all' as const, label: 'All' },
-              { id: 'high-energy' as const, label: 'High Energy' },
-              { id: 'groove' as const, label: 'Groove / Dance' },
-              { id: 'dreamy' as const, label: 'Dreamy / Chill' },
-            ].map((option) => {
-              const isActive = familyFilter === option.id;
-              return (
+            <img
+              src="/ASIcon-power-256.svg"
+              alt="Power"
+              style={{
+                width: '20px',
+                height: '20px',
+                filter: 'drop-shadow(0 0 4px #00FF00)',
+              }}
+            />
+            <span
+              style={{
+                fontFamily: 'var(--font-header)',
+                fontSize: '0.75rem',
+                letterSpacing: '0.16em',
+                textTransform: 'uppercase',
+                color: '#00FF00',
+              }}
+            >
+              Display Options
+            </span>
+          </div>
+
+          {/* Power Strip Container */}
+          <div
+            style={{
+              background: 'linear-gradient(180deg, #1a1a1a 0%, #0d0d0d 100%)',
+              border: '2px solid #333',
+              borderRadius: '8px',
+              padding: '0.5rem',
+              boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.5), 0 0 8px rgba(0,255,0,0.1)',
+            }}
+          >
+            {/* Power Strip Outlets Row */}
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-around',
+                alignItems: 'center',
+                gap: '0.25rem',
+              }}
+            >
+              {/* Grid Power Outlet */}
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '0.3rem',
+                }}
+              >
                 <button
-                  key={option.id}
                   type="button"
-                  onClick={() => setFamilyFilter(option.id)}
+                  onClick={() => setShowGrid(!showGrid)}
                   style={{
-                    fontSize: '0.7rem',
-                    padding: '0.25rem 0.6rem',
-                    borderRadius: '999px',
-                    border: isActive
-                      ? '1px solid rgba(0,255,0,0.9)'
-                      : '1px solid rgba(255,255,255,0.2)',
-                    backgroundColor: isActive ? '#0b2810' : 'transparent',
-                    color: isActive ? '#baffc8' : '#dddddd',
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '6px',
+                    border: showGrid ? '2px solid #00FF00' : '2px solid #444',
+                    background: showGrid
+                      ? 'radial-gradient(circle, #003300 0%, #001100 100%)'
+                      : 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
                     cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: showGrid
+                      ? '0 0 12px rgba(0,255,0,0.4), inset 0 0 8px rgba(0,255,0,0.2)'
+                      : 'inset 0 2px 4px rgba(0,0,0,0.5)',
+                    transition: 'all 0.15s ease',
                   }}
                 >
-                  {option.label}
+                  <img
+                    src="/ASIcon-power-256.svg"
+                    alt="Grid"
+                    style={{
+                      width: '24px',
+                      height: '24px',
+                      opacity: showGrid ? 1 : 0.3,
+                      filter: showGrid ? 'drop-shadow(0 0 4px #00FF00)' : 'none',
+                      transition: 'all 0.15s ease',
+                    }}
+                  />
                 </button>
-              );
-            })}
-          </div>
+                <span
+                  style={{
+                    fontFamily: 'var(--font-body)',
+                    fontSize: '0.6rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    opacity: showGrid ? 1 : 0.5,
+                    color: showGrid ? '#00FF00' : '#888',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  Grid
+                </span>
+              </div>
 
-          <div
-            style={{
-              fontSize: '0.7rem',
-              opacity: 0.65,
-            }}
-          >
-            Showing {filteredNodes.length} / {GOOF_NODES.length} nodes.
-          </div>
-
-          {/* Grid / Axis / Boundary toggles */}
-          <div
-            style={{
-              marginTop: '0.25rem',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '0.4rem',
-            }}
-          >
-            {/* Grid toggle */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: '0.5rem',
-              }}
-            >
-              <span
+              {/* Axis Power Outlet */}
+              <div
                 style={{
-                  fontSize: '0.7rem',
-                  opacity: 0.75,
-                }}
-              >
-                Show space-time grid
-              </span>
-              <label
-                style={{
-                  display: 'inline-flex',
+                  display: 'flex',
+                  flexDirection: 'column',
                   alignItems: 'center',
-                  gap: '0.35rem',
-                  cursor: 'pointer',
-                  fontSize: '0.7rem',
+                  gap: '0.3rem',
                 }}
               >
-                <input
-                  type="checkbox"
-                  checked={showGrid}
-                  onChange={(e) => setShowGrid(e.target.checked)}
-                  style={{ accentColor: '#00FF00' }}
-                />
-                <span>{showGrid ? 'On' : 'Off'}</span>
-              </label>
+                <button
+                  type="button"
+                  onClick={() => setShowAxes(!showAxes)}
+                  style={{
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '6px',
+                    border: showAxes ? '2px solid #00FF00' : '2px solid #444',
+                    background: showAxes
+                      ? 'radial-gradient(circle, #003300 0%, #001100 100%)'
+                      : 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: showAxes
+                      ? '0 0 12px rgba(0,255,0,0.4), inset 0 0 8px rgba(0,255,0,0.2)'
+                      : 'inset 0 2px 4px rgba(0,0,0,0.5)',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  <img
+                    src="/ASIcon-power-256.svg"
+                    alt="Axes"
+                    style={{
+                      width: '24px',
+                      height: '24px',
+                      opacity: showAxes ? 1 : 0.3,
+                      filter: showAxes ? 'drop-shadow(0 0 4px #00FF00)' : 'none',
+                      transition: 'all 0.15s ease',
+                    }}
+                  />
+                </button>
+                <span
+                  style={{
+                    fontFamily: 'var(--font-body)',
+                    fontSize: '0.6rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    opacity: showAxes ? 1 : 0.5,
+                    color: showAxes ? '#00FF00' : '#888',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  Axes
+                </span>
+              </div>
+
+              {/* Boundary Hull Power Outlet */}
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '0.3rem',
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setShowBoundaries(!showBoundaries)}
+                  style={{
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '6px',
+                    border: showBoundaries ? '2px solid #00FF00' : '2px solid #444',
+                    background: showBoundaries
+                      ? 'radial-gradient(circle, #003300 0%, #001100 100%)'
+                      : 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: showBoundaries
+                      ? '0 0 12px rgba(0,255,0,0.4), inset 0 0 8px rgba(0,255,0,0.2)'
+                      : 'inset 0 2px 4px rgba(0,0,0,0.5)',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  <img
+                    src="/ASIcon-power-256.svg"
+                    alt="Hull"
+                    style={{
+                      width: '24px',
+                      height: '24px',
+                      opacity: showBoundaries ? 1 : 0.3,
+                      filter: showBoundaries ? 'drop-shadow(0 0 4px #00FF00)' : 'none',
+                      transition: 'all 0.15s ease',
+                    }}
+                  />
+                </button>
+                <span
+                  style={{
+                    fontFamily: 'var(--font-body)',
+                    fontSize: '0.6rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    opacity: showBoundaries ? 1 : 0.5,
+                    color: showBoundaries ? '#00FF00' : '#888',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  Hull
+                </span>
+              </div>
             </div>
 
-            {/* Axis toggle */}
+            {/* Power Strip Indicator Light Strip */}
             <div
               style={{
+                marginTop: '0.5rem',
+                height: '3px',
+                background: '#111',
+                borderRadius: '2px',
                 display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: '0.5rem',
+                gap: '2px',
+                overflow: 'hidden',
               }}
             >
-              <span
-                style={{
-                  fontSize: '0.7rem',
-                  opacity: 0.75,
-                }}
-              >
-                Show axis lines
-              </span>
-              <label
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.35rem',
-                  cursor: 'pointer',
-                  fontSize: '0.7rem',
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={showAxes}
-                  onChange={(e) => setShowAxes(e.target.checked)}
-                  style={{ accentColor: '#00FF00' }}
-                />
-                <span>{showAxes ? 'On' : 'Off'}</span>
-              </label>
-            </div>
-
-            {/* Boundary hull toggle */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: '0.5rem',
-              }}
-            >
-              <span
-                style={{
-                  fontSize: '0.7rem',
-                  opacity: 0.75,
-                }}
-              >
-                Show boundary hull
-              </span>
-              <label
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.35rem',
-                  cursor: 'pointer',
-                  fontSize: '0.7rem',
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={showBoundaries}
-                  onChange={(e) => setShowBoundaries(e.target.checked)}
-                  style={{ accentColor: '#00FF00' }}
-                />
-                <span>{showBoundaries ? 'On' : 'Off'}</span>
-              </label>
+              <div style={{
+                flex: 1,
+                background: showGrid ? '#00FF00' : '#222',
+                boxShadow: showGrid ? '0 0 6px #00FF00' : 'none',
+                transition: 'all 0.15s ease',
+              }} />
+              <div style={{
+                flex: 1,
+                background: showAxes ? '#00FF00' : '#222',
+                boxShadow: showAxes ? '0 0 6px #00FF00' : 'none',
+                transition: 'all 0.15s ease',
+              }} />
+              <div style={{
+                flex: 1,
+                background: showBoundaries ? '#00FF00' : '#222',
+                boxShadow: showBoundaries ? '0 0 6px #00FF00' : 'none',
+                transition: 'all 0.15s ease',
+              }} />
             </div>
           </div>
         </div>
@@ -1315,6 +1354,7 @@ export function GoofScene() {
         >
           <div
             style={{
+              fontFamily: 'var(--font-header)',
               opacity: 0.8,
               letterSpacing: '0.16em',
               textTransform: 'uppercase',
@@ -1331,6 +1371,7 @@ export function GoofScene() {
               <div>
                 <div
                   style={{
+                    fontFamily: 'var(--font-header)',
                     fontSize: '1rem',
                     fontWeight: 600,
                     letterSpacing: '0.05em',
@@ -1463,6 +1504,7 @@ export function GoofScene() {
               <div>
                 <div
                   style={{
+                    fontFamily: 'var(--font-header)',
                     fontSize: '0.95rem',
                     fontWeight: 600,
                     letterSpacing: '0.08em',
@@ -1598,166 +1640,7 @@ export function GoofScene() {
             </div>
           )}
         </div>
-
-        {/* Legend */}
-        <div
-          style={{
-            marginTop: '0.6rem',
-            paddingTop: '0.6rem',
-            borderTop: '1px solid rgba(255,255,255,0.08)',
-            fontSize: '0.72rem',
-            opacity: 0.8,
-          }}
-        >
-          <div
-            style={{
-              letterSpacing: '0.12em',
-              textTransform: 'uppercase',
-              fontSize: '0.68rem',
-              marginBottom: '0.4rem',
-              color: '#aaaaaa',
-            }}
-          >
-            Legend
-          </div>
-
-          {/* Node family legend */}
-          <div
-            style={{
-              display: 'flex',
-              gap: '0.6rem',
-              marginBottom: '0.45rem',
-              flexWrap: 'wrap',
-            }}
-          >
-            <LegendSwatch color="#00FF00" label="High Energy" />
-            <LegendSwatch color="#66FF66" label="Groove / Dance" />
-            <LegendSwatch color="#7732D9" label="Dreamy / Chill" />
-          </div>
-
-          <div
-            style={{
-              lineHeight: 1.4,
-              marginBottom: '0.6rem',
-            }}
-          >
-            <strong>Size</strong> = composite energy (tempo, rhythmic
-            complexity, temperature, synthetic-ness).
-            <br />
-            <strong>Position</strong> encodes the 6-axis GOOF signature
-            (Tempo, Tonality, Timbre) in 3D space.
-          </div>
-
-          {/* Axis legend strip */}
-          <div
-            style={{
-              borderTop: '1px solid rgba(255,255,255,0.08)',
-              paddingTop: '0.5rem',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '0.35rem',
-            }}
-          >
-            <div
-              style={{
-                letterSpacing: '0.12em',
-                textTransform: 'uppercase',
-                fontSize: '0.68rem',
-                color: '#aaaaaa',
-              }}
-            >
-              Axis Dimensions
-            </div>
-
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '0.25rem',
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.35rem',
-                }}
-              >
-                <LegendSwatch color="#FFB347" label="Tempo" />
-                <span
-                  style={{
-                    fontSize: '0.7rem',
-                    opacity: 0.85,
-                  }}
-                >
-                  Rhythm Speed · Rhythm Complexity
-                </span>
-              </div>
-
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.35rem',
-                }}
-              >
-                <LegendSwatch color="#7732D9" label="Tonality" />
-                <span
-                  style={{
-                    fontSize: '0.7rem',
-                    opacity: 0.85,
-                  }}
-                >
-                  Harmonic Quality · Harmonic Density
-                </span>
-              </div>
-
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.35rem',
-                }}
-              >
-                <LegendSwatch color="#009DFF" label="Timbre" />
-                <span
-                  style={{
-                    fontSize: '0.7rem',
-                    opacity: 0.85,
-                  }}
-                >
-                  Sonic Temperature · Synthetic Value
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
       </aside>
-    </div>
-  );
-}
-
-// Tiny helper component for legend color dots
-function LegendSwatch({ color, label }: { color: string; label: string }) {
-  return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.25rem',
-      }}
-    >
-      <span
-        style={{
-          width: '10px',
-          height: '10px',
-          borderRadius: '999px',
-          backgroundColor: color,
-          boxShadow: `0 0 8px ${color}`,
-          flexShrink: 0,
-        }}
-      />
-      <span>{label}</span>
     </div>
   );
 }
