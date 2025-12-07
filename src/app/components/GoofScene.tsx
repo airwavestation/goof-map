@@ -52,7 +52,7 @@ function computeSongPosition(values: GoofValues): Vec3 {
     [[-2, 0, 2], [2, 0, -2]],
     // timbre_warmth:    (-2 cold … +2 warm)
     [[0, 2, 2], [0, -2, -2]],
-    // timbre_synthetic: (-2 organic … +2 synthetic)  (+ side → Vertex12)
+    // timbre_synthetic: (-2 organic … +2 synthetic)
     [[0, -2, 2], [0, 2, -2]],
   ];
 
@@ -182,6 +182,25 @@ const GOOF_NODES: GoofNode[] = (goofsRaw as GoofInput[]).map((raw) => ({
 
 type GoofFamily = 'high-energy' | 'groove' | 'dreamy' | 'other';
 
+function getNodeRegionColor(node: GoofNode): string | null {
+  const name = node.name.toLowerCase();
+  const genre = node.genre.toLowerCase();
+
+  for (const region of GENRE_REGIONS) {
+    const regionName = region.name.toLowerCase();
+
+    // If the node's name or genre includes the region name,
+    // treat it as the centroid for that region.
+    if (name.includes(regionName) || genre.includes(regionName)) {
+      const color = GENRE_REGION_COLORS[region.id];
+      if (color) return color;
+    }
+  }
+
+  return null;
+}
+
+
 function getNodeFamily(node: GoofNode): GoofFamily {
   const g = node.genre.toLowerCase();
 
@@ -215,13 +234,12 @@ function getFamilyColor(family: GoofFamily): string {
 }
 
 function getNodeBaseColor(node: GoofNode): string {
-  const g = node.genre.toLowerCase();
+  // First: if this node clearly belongs to a named region (e.g. "Ambient",
+  // "Synthwave", "House"), use that region's cloud color.
+  const regionColor = getNodeRegionColor(node);
+  if (regionColor) return regionColor;
 
-  // Synthwave centroid: match the neon pink of the Synthwave cloud
-  if (g.includes('synthwave')) {
-    return '#FF6AD5';
-  }
-
+  // Fallback: use the broader family color (high-energy / groove / dreamy / other)
   return getFamilyColor(getNodeFamily(node));
 }
 
@@ -256,7 +274,6 @@ type BoundaryVertex = {
   position: [number, number, number];
 };
 
-// Your 12 extreme vertices (geometry positions)
 const BOUNDARY_VERTICES: BoundaryVertex[] = [
   { id: 'v1', label: 'V1', position: [2, 2, 0] },
   { id: 'v2', label: 'V2', position: [-2, -2, 0] },
@@ -272,7 +289,6 @@ const BOUNDARY_VERTICES: BoundaryVertex[] = [
   { id: 'v12', label: 'V12', position: [0, -2, 2] },
 ];
 
-// Map for quick lookup by id
 const BOUNDARY_VERTEX_MAP: Record<string, BoundaryVertex> =
   BOUNDARY_VERTICES.reduce(
     (acc, v) => {
@@ -330,12 +346,12 @@ type AxisGroup = 'TEMPO' | 'TONALITY' | 'TIMBRE';
 
 type VertexInfo = {
   id: string;
-  title: string; // e.g. "Fast Tempo"
+  title: string;
   group: AxisGroup;
-  dimension: string; // e.g. "Rhythm Speed"
+  dimension: string;
   role: 'positive' | 'negative';
-  axisLabel: string; // e.g. "+2 FAST"
-  rangeHint: string; // e.g. "-2 SLOW … +2 FAST"
+  axisLabel: string;
+  rangeHint: string;
   oppositeId: string;
   description: string;
   exampleGenres: string;
@@ -621,7 +637,6 @@ function AxisCylinder({ startId, endId, group }: AxisCylinderProps) {
 
   return (
     <mesh position={mid} quaternion={quaternion}>
-      {/* open-ended cylinder so it feels like a beam */}
       <cylinderGeometry args={[0.05, 0.05, length, 24, 1, true]} />
       <meshStandardMaterial
         color={color}
@@ -636,6 +651,54 @@ function AxisCylinder({ startId, endId, group }: AxisCylinderProps) {
   );
 }
 
+// ---------- SPACETIME GRID (CUBIC CAGE) ----------
+
+function SpacetimeGrid({ visible }: { visible: boolean }) {
+  if (!visible) return null;
+
+  const size = 10;        // overall cube size
+  const half = size / 2;  // +/- extent from center
+  const divisions = 20;
+
+  return (
+    <group>
+      {/* Top + bottom (XZ planes) */}
+      <gridHelper
+        args={[size, divisions, '#00FF00', '#222222']}
+        position={[0, half, 0]}
+      />
+      <gridHelper
+        args={[size, divisions, '#00FF00', '#222222']}
+        position={[0, -half, 0]}
+      />
+
+      {/* Front + back (XY planes) */}
+      <gridHelper
+        args={[size, divisions, '#00FF00', '#222222']}
+        rotation={[Math.PI / 2, 0, 0]}
+        position={[0, 0, half]}
+      />
+      <gridHelper
+        args={[size, divisions, '#00FF00', '#222222']}
+        rotation={[Math.PI / 2, 0, 0]}
+        position={[0, 0, -half]}
+      />
+
+      {/* Left + right (YZ planes) */}
+      <gridHelper
+        args={[size, divisions, '#00FF00', '#222222']}
+        rotation={[0, 0, Math.PI / 2]}
+        position={[half, 0, 0]}
+      />
+      <gridHelper
+        args={[size, divisions, '#00FF00', '#222222']}
+        rotation={[0, 0, Math.PI / 2]}
+        position={[-half, 0, 0]}
+      />
+    </group>
+  );
+}
+
 // ---------- MAIN SCENE COMPONENT ----------
 
 export function GoofScene() {
@@ -647,6 +710,7 @@ export function GoofScene() {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [showBoundaries, setShowBoundaries] = useState<boolean>(true);
   const [showAxes, setShowAxes] = useState<boolean>(true);
+  const [showGrid, setShowGrid] = useState<boolean>(true);
 
   const normalizedQuery = searchQuery.trim().toLowerCase();
 
@@ -706,8 +770,8 @@ export function GoofScene() {
           <directionalLight position={[6, 6, 6]} intensity={0.9} />
           <directionalLight position={[-4, -3, -5]} intensity={0.3} />
 
-          {/* grid with neon center line */}
-          <gridHelper args={[10, 20, '#00FF00', '#2A2A2A']} />
+          {/* 3D spacetime grid */}
+          <SpacetimeGrid visible={showGrid} />
 
           {/* ---- AXES + BOUNDARY HULL (separate toggles) ---- */}
 
@@ -778,7 +842,7 @@ export function GoofScene() {
                     onClick={(event) => {
                       event.stopPropagation();
                       setSelectedVertexId(v.id);
-                      setSelectedId(null); // clear node selection
+                      setSelectedId(null);
                     }}
                     onPointerOver={(event) => {
                       event.stopPropagation();
@@ -825,7 +889,6 @@ export function GoofScene() {
                   <mesh
                     key={`${region.id}-pt-${idx}`}
                     position={pos}
-                    // clouds are visual only; ignore pointer events
                     raycast={null as any}
                   >
                     <sphereGeometry args={[0.035, 10, 10]} />
@@ -845,7 +908,7 @@ export function GoofScene() {
             );
           })}
 
-          {/* GOOF centroids (currently: genre/example nodes) */}
+          {/* GOOF centroids */}
           {filteredNodes.map((node) => {
             const isHovered = hoveredId === node.id;
             const isSelected = selectedId === node.id;
@@ -872,7 +935,7 @@ export function GoofScene() {
                 onClick={(event) => {
                   event.stopPropagation();
                   setSelectedId(node.id);
-                  setSelectedVertexId(null); // clear vertex selection
+                  setSelectedVertexId(null);
                 }}
               >
                 <sphereGeometry args={[radius, 24, 24]} />
@@ -998,7 +1061,7 @@ export function GoofScene() {
             Showing {filteredNodes.length} / {GOOF_NODES.length} nodes.
           </div>
 
-          {/* Axis / Boundary toggles */}
+          {/* Grid / Axis / Boundary toggles */}
           <div
             style={{
               marginTop: '0.25rem',
@@ -1007,6 +1070,42 @@ export function GoofScene() {
               gap: '0.4rem',
             }}
           >
+            {/* Grid toggle */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '0.5rem',
+              }}
+            >
+              <span
+                style={{
+                  fontSize: '0.7rem',
+                  opacity: 0.75,
+                }}
+              >
+                Show space-time grid
+              </span>
+              <label
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                  cursor: 'pointer',
+                  fontSize: '0.7rem',
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={showGrid}
+                  onChange={(e) => setShowGrid(e.target.checked)}
+                  style={{ accentColor: '#00FF00' }}
+                />
+                <span>{showGrid ? 'On' : 'Off'}</span>
+              </label>
+            </div>
+
             {/* Axis toggle */}
             <div
               style={{
@@ -1272,9 +1371,6 @@ export function GoofScene() {
                   }}
                 >
                   <strong>{selectedVertex.axisLabel}</strong>{' '}
-                  <span style={{ opacity: 0.7 }}>
-                    ({selectedVertex.rangeHint})
-                  </span>
                 </div>
               </div>
 
