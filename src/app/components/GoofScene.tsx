@@ -126,9 +126,20 @@ type GenreRegion = {
 const GENRE_REGIONS = genreRegionsRaw as GenreRegion[];
 
 const GENRE_REGION_COLORS: Record<string, string> = {
-  genre_ambient: '#7732D9', // dreamy purple
-  genre_synthwave: '#FF6AD5', // neon pink
-  genre_house: '#66FF66', // groove green
+  genre_ambient: '#7732D9', // Ambient / Downtempo
+  genre_synthwave: '#FF6AD5', // Synthwave
+  genre_house: '#66FF66', // House
+
+  genre_liquid_dnb: '#00E5FF', // Liquid DnB
+  genre_experimental_glitch_idm: '#FFB347', // Experimental / Glitch / IDM
+  genre_hardcore_gabber: '#FF3B3B', // Hardcore / Gabber
+  genre_electro: '#FFD93B', // Electro
+  genre_industrial_ebm: '#FF6A00', // Industrial / EBM
+  genre_breakbeat: '#00FF9D', // Breakbeat
+  genre_dubstep: '#9D4BFF', // Dubstep
+  genre_dnb_jungle: '#00FF66', // DnB / Jungle
+  genre_trance: '#00B3FF', // Trance
+  genre_techno: '#FF0080', // Techno
 };
 
 function getRegionColor(region: GenreRegion): string {
@@ -168,17 +179,124 @@ function generateRegionPointClouds(): Record<string, Vec3[]> {
 }
 
 // static clouds: same layout each load, not re-randomized every frame
-const REGION_POINT_CLOUDS = generateRegionPointClouds();
+const RAW_REGION_POINT_CLOUDS = generateRegionPointClouds();
 
 type GoofInput = Omit<GoofNode, 'position'> & {
   position?: [number, number, number];
 };
 
-const GOOF_NODES: GoofNode[] = (goofsRaw as GoofInput[]).map((raw) => ({
+const RAW_GOOF_NODES: GoofNode[] = (goofsRaw as GoofInput[]).map((raw) => ({
   ...raw,
   // ignore any position in JSON and compute from 6D GOOF values instead
   position: computeSongPosition(raw.values),
 }));
+
+/**
+ * Normalize all node + cloud positions so the whole system:
+ * - is centered around the origin
+ * - fits inside a target cube (e.g. [-4, 4] on each axis)
+ */
+function normalizeData(
+  nodes: GoofNode[],
+  clouds: Record<string, Vec3[]>
+): { nodes: GoofNode[]; clouds: Record<string, Vec3[]> } {
+  const allPositions: Vec3[] = [];
+
+  // collect node positions
+  for (const n of nodes) {
+    allPositions.push(n.position);
+  }
+
+  // collect cloud positions
+  for (const pts of Object.values(clouds)) {
+    for (const p of pts) {
+      allPositions.push(p);
+    }
+  }
+
+  // safety: if somehow we have no positions, just return as-is
+  if (allPositions.length === 0) {
+    return { nodes, clouds };
+  }
+
+  // find min / max on each axis
+  let minX = Infinity,
+    minY = Infinity,
+    minZ = Infinity;
+  let maxX = -Infinity,
+    maxY = -Infinity,
+    maxZ = -Infinity;
+
+  for (const [x, y, z] of allPositions) {
+    if (x < minX) minX = x;
+    if (y < minY) minY = y;
+    if (z < minZ) minZ = z;
+
+    if (x > maxX) maxX = x;
+    if (y > maxY) maxY = y;
+    if (z > maxZ) maxZ = z;
+  }
+
+  const spanX = maxX - minX || 1;
+  const spanY = maxY - minY || 1;
+  const spanZ = maxZ - minZ || 1;
+
+  // use the largest span so aspect ratio is preserved
+  const largestSpan = Math.max(spanX, spanY, spanZ) || 1;
+
+  // target cube half-extent; tweak this if you want tighter / looser layout
+  const targetHalfExtent = 2; // => roughly [-4, 4] in each dimension
+  const scale = (2 * targetHalfExtent) / largestSpan;
+
+  const centerX = (minX + maxX) / 2;
+  const centerY = (minY + maxY) / 2;
+  const centerZ = (minZ + maxZ) / 2;
+
+  const normalizeVec = ([x, y, z]: Vec3): Vec3 => [
+    (x - centerX) * scale,
+    (y - centerY) * scale,
+    (z - centerZ) * scale,
+  ];
+
+  // normalized nodes
+  const normalizedNodes: GoofNode[] = nodes.map((n) => ({
+    ...n,
+    position: normalizeVec(n.position),
+  }));
+
+  // normalized clouds
+  const normalizedClouds: Record<string, Vec3[]> = {};
+  for (const [id, pts] of Object.entries(clouds)) {
+    normalizedClouds[id] = pts.map((p) => normalizeVec(p));
+  }
+
+  return { nodes: normalizedNodes, clouds: normalizedClouds };
+}
+
+// final, normalized data used by the scene
+const { nodes: GOOF_NODES, clouds: REGION_POINT_CLOUDS } = normalizeData(
+  RAW_GOOF_NODES,
+  RAW_REGION_POINT_CLOUDS
+);
+
+// Compute a centroid in *normalized* space by averaging all cloud points
+function getRegionCentroid(regionId: string): Vec3 | null {
+  const pts = REGION_POINT_CLOUDS[regionId];
+  if (!pts || pts.length === 0) return null;
+
+  let sx = 0;
+  let sy = 0;
+  let sz = 0;
+
+  for (const [x, y, z] of pts) {
+    sx += x;
+    sy += y;
+    sz += z;
+  }
+
+  const n = pts.length;
+  return [sx / n, sy / n, sz / n];
+}
 
 type GoofFamily = 'high-energy' | 'groove' | 'dreamy' | 'other';
 
@@ -199,7 +317,6 @@ function getNodeRegionColor(node: GoofNode): string | null {
 
   return null;
 }
-
 
 function getNodeFamily(node: GoofNode): GoofFamily {
   const g = node.genre.toLowerCase();
@@ -656,8 +773,8 @@ function AxisCylinder({ startId, endId, group }: AxisCylinderProps) {
 function SpacetimeGrid({ visible }: { visible: boolean }) {
   if (!visible) return null;
 
-  const size = 10;        // overall cube size
-  const half = size / 2;  // +/- extent from center
+  const size = 10; // overall cube size
+  const half = size / 2; // +/- extent from center
   const divisions = 20;
 
   return (
@@ -878,13 +995,15 @@ export function GoofScene() {
             />
           )}
 
-          {/* GENRE CLOUDS (Ambient / Synthwave / House) */}
+          {/* GENRE CLOUDS (no extra bright centroids, just ambient points) */}
           {GENRE_REGIONS.map((region) => {
             const points = REGION_POINT_CLOUDS[region.id] || [];
             const color = getRegionColor(region);
+            // const centroid = getRegionCentroid(region.id); // still available if you ever want it
 
             return (
               <React.Fragment key={region.id}>
+                {/* Cloud points */}
                 {points.map((pos, idx) => (
                   <mesh
                     key={`${region.id}-pt-${idx}`}
@@ -904,11 +1023,13 @@ export function GoofScene() {
                     />
                   </mesh>
                 ))}
+
+                {/* Removed: bright genre centroid core mesh to avoid duplicate/non-clickable centroids */}
               </React.Fragment>
             );
           })}
 
-          {/* GOOF centroids */}
+          {/* GOOF centroids (tracks – clickable) */}
           {filteredNodes.map((node) => {
             const isHovered = hoveredId === node.id;
             const isSelected = selectedId === node.id;
