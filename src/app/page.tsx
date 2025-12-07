@@ -7,7 +7,7 @@ const modules = [
   {
     id: 'goof-map',
     name: 'G.O.O.F. Genre Map',
-    description: 'Generic Oscillation Organization Framework — 3D genre visualization and exploration',
+    description: 'Generic Oscillation Organization Framework ~ 3D genre visualization and exploration',
     status: 'online',
     href: '/goof-map'
   },
@@ -15,7 +15,7 @@ const modules = [
      id: 'cryptic-calculator',
      name: 'Cryptic Calculator',
      description: 'A mysterious tool for decoding hidden musical messages',
-     status: 'online',
+     status: 'offline',
      href: '/cryptic-calculator'
   }
 ];
