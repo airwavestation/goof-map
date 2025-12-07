@@ -1394,6 +1394,7 @@ export function GenreMap() {
                 </div>
                 <div
                   style={{
+                    fontFamily: 'var(--font-body)',
                     fontSize: '0.75rem',
                     opacity: 0.75,
                   }}
@@ -1404,6 +1405,7 @@ export function GenreMap() {
 
               <p
                 style={{
+                  fontFamily: 'var(--font-body)',
                   lineHeight: 1.4,
                   opacity: 0.9,
                 }}
@@ -1423,6 +1425,7 @@ export function GenreMap() {
               >
                 <div
                   style={{
+                    fontFamily: 'var(--font-body)',
                     fontSize: '0.75rem',
                     opacity: 0.8,
                   }}
@@ -1442,6 +1445,7 @@ export function GenreMap() {
                       target="_blank"
                       rel="noreferrer"
                       style={{
+                        fontFamily: 'var(--font-body)',
                         fontSize: '0.75rem',
                         padding: '0.3rem 0.55rem',
                         borderRadius: '999px',
@@ -1461,6 +1465,7 @@ export function GenreMap() {
                       target="_blank"
                       rel="noreferrer"
                       style={{
+                        fontFamily: 'var(--font-body)',
                         fontSize: '0.75rem',
                         padding: '0.3rem 0.55rem',
                         borderRadius: '999px',
@@ -1484,6 +1489,7 @@ export function GenreMap() {
                   setSelectedVertexId(null);
                 }}
                 style={{
+                  fontFamily: 'var(--font-body)',
                   marginTop: 'auto',
                   alignSelf: 'flex-start',
                   fontSize: '0.75rem',
@@ -1518,6 +1524,7 @@ export function GenreMap() {
                   <span>{selectedVertex.title}</span>
                   <span
                     style={{
+                      fontFamily: 'var(--font-body)',
                       fontSize: '0.72rem',
                       opacity: 0.8,
                       color: '#aaaaaa',
@@ -1529,6 +1536,7 @@ export function GenreMap() {
 
                 <div
                   style={{
+                    fontFamily: 'var(--font-body)',
                     fontSize: '0.8rem',
                     opacity: 0.85,
                   }}
@@ -1539,6 +1547,7 @@ export function GenreMap() {
 
               <p
                 style={{
+                  fontFamily: 'var(--font-body)',
                   lineHeight: 1.4,
                   opacity: 0.9,
                 }}
@@ -1558,6 +1567,7 @@ export function GenreMap() {
               >
                 <div
                   style={{
+                    fontFamily: 'var(--font-body)',
                     fontSize: '0.75rem',
                     opacity: 0.8,
                   }}
@@ -1566,6 +1576,7 @@ export function GenreMap() {
                 </div>
                 <div
                   style={{
+                    fontFamily: 'var(--font-body)',
                     fontSize: '0.78rem',
                     opacity: 0.9,
                   }}
@@ -1577,6 +1588,7 @@ export function GenreMap() {
               {selectedVertex.oppositeId && (
                 <div
                   style={{
+                    fontFamily: 'var(--font-body)',
                     borderTop: '1px solid rgba(255,255,255,0.08)',
                     paddingTop: '0.6rem',
                     marginTop: '0.2rem',
@@ -1606,6 +1618,7 @@ export function GenreMap() {
                 type="button"
                 onClick={() => setSelectedVertexId(null)}
                 style={{
+                  fontFamily: 'var(--font-body)',
                   marginTop: 'auto',
                   alignSelf: 'flex-start',
                   fontSize: '0.75rem',
@@ -1624,6 +1637,7 @@ export function GenreMap() {
             // --- DEFAULT HELP TEXT ---
             <div
               style={{
+                fontFamily: 'var(--font-body)',
                 opacity: 0.75,
                 lineHeight: 1.4,
               }}
