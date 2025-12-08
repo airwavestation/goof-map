@@ -53,6 +53,7 @@ export default function HomePage() {
         </h1>
         <p
           style={{
+            fontFamily: 'var(--font-body)',
             fontSize: '0.9rem',
             letterSpacing: '0.3em',
             textTransform: 'uppercase',
@@ -77,12 +78,14 @@ export default function HomePage() {
         {/* Status Bar */}
         <div
           style={{
+            fontFamily: 'var(--font-body)',
             fontSize: '0.7rem',
             letterSpacing: '0.2em',
             textTransform: 'uppercase',
             marginBottom: '2rem',
             padding: '0.5rem 1rem',
             border: '1px solid rgba(0,255,0,0.3)',
+            borderRadius: '8px',
             display: 'flex',
             gap: '2rem'
           }}
@@ -113,6 +116,7 @@ export default function HomePage() {
               <div
                 style={{
                   border: '1px solid #00ff00',
+                  borderRadius: '12px',
                   padding: '1.5rem',
                   backgroundColor: 'rgba(0,255,0,0.02)',
                   transition: 'all 0.2s ease',
@@ -148,11 +152,13 @@ export default function HomePage() {
                   </h2>
                   <span
                     style={{
+                      fontFamily: 'var(--font-body)',
                       fontSize: '0.6rem',
                       letterSpacing: '0.15em',
                       textTransform: 'uppercase',
                       padding: '0.2rem 0.5rem',
                       border: '1px solid rgba(0,255,0,0.5)',
+                      borderRadius: '4px',
                       color: module.status === 'online' ? '#00ff00' : 'rgba(0,255,0,0.5)'
                     }}
                   >
@@ -161,6 +167,7 @@ export default function HomePage() {
                 </div>
                 <p
                   style={{
+                    fontFamily: 'var(--font-body)',
                     fontSize: '0.75rem',
                     opacity: 0.7,
                     margin: 0,
@@ -171,6 +178,7 @@ export default function HomePage() {
                 </p>
                 <div
                   style={{
+                    fontFamily: 'var(--font-body)',
                     marginTop: '1rem',
                     fontSize: '0.65rem',
                     letterSpacing: '0.15em',
@@ -188,6 +196,7 @@ export default function HomePage() {
           <div
             style={{
               border: '1px dashed rgba(0,255,0,0.3)',
+              borderRadius: '12px',
               padding: '1.5rem',
               display: 'flex',
               flexDirection: 'column',
@@ -199,6 +208,7 @@ export default function HomePage() {
           >
             <span
               style={{
+                fontFamily: 'var(--font-body)',
                 fontSize: '0.7rem',
                 letterSpacing: '0.15em',
                 textTransform: 'uppercase'
@@ -208,6 +218,7 @@ export default function HomePage() {
             </span>
             <span
               style={{
+                fontFamily: 'var(--font-body)',
                 fontSize: '0.6rem',
                 marginTop: '0.5rem',
                 opacity: 0.6
@@ -222,6 +233,7 @@ export default function HomePage() {
       {/* Footer */}
       <footer
         style={{
+          fontFamily: 'var(--font-body)',
           padding: '1rem 2rem',
           borderTop: '1px solid rgba(0,255,0,0.3)',
           fontSize: '0.65rem',
